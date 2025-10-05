@@ -1,5 +1,5 @@
 import { MyObject } from "./MyObject.js";
-import { generateSphere, generateEllipticParaboloid, generateBSpline } from "../quadobj/sphere.js";
+import { generateSphere, generateEllipticParaboloid, generateBSpline } from "./main.js";
 function main() {
     //GET CANVAS
     var CANVAS = document.getElementById("mycanvas");
@@ -116,25 +116,7 @@ function main() {
     GL.useProgram(SHADER_PROGRAM);
 
     /*========================= OBJECTS ========================= */
-    var Object1 = new MyObject(GL, SHADER_PROGRAM, _position, _color);
-    var Object2 = new MyObject(GL, SHADER_PROGRAM, _position, _color);
-    var Object3 = new MyObject(GL, SHADER_PROGRAM, _position, _color);
-    var Object4 = new MyObject(GL, SHADER_PROGRAM, _position, _color);
-
     var sphereData = generateSphere(1, 1.4, .2, 10, 10);
-    var paraboloidData = generateEllipticParaboloid(.2, 1, 2, 50, 50);
-
-    var Object5 = new MyObject(
-        GL, SHADER_PROGRAM,
-        _position, _color,
-        sphereData.vertices, sphereData.faces
-    );
-
-    var Object6 = new MyObject(
-        GL, SHADER_PROGRAM,
-        _position, _color,
-        paraboloidData.vertices, paraboloidData.faces
-    );
     var ctrl = [
         [0, 0, 0],
         [1, 2, 0],
@@ -142,6 +124,20 @@ function main() {
         [5, 2, 1]
     ];
     var tubeData = generateBSpline(ctrl, 0.2, 50, 20);
+    var paraboloidData = generateEllipticParaboloid(.2, 1, 2, 50, 50);
+
+    var Object1 = new MyObject(GL, SHADER_PROGRAM, _position, _color);
+    var Object2 = new MyObject(GL, SHADER_PROGRAM, _position, _color);
+    var Object3 = new MyObject(GL, SHADER_PROGRAM, _position, _color);
+    var Object4 = new MyObject(GL, SHADER_PROGRAM, _position, _color);
+    var Object5 = new MyObject(
+        GL, SHADER_PROGRAM,
+        _position, _color,
+        sphereData.vertices, sphereData.faces);
+    var Object6 = new MyObject(
+        GL, SHADER_PROGRAM,
+        _position, _color,
+        paraboloidData.vertices, paraboloidData.faces);
     var tube = new MyObject(GL, SHADER_PROGRAM, _position, _color, 
                           tubeData.vertices, tubeData.faces);
 
