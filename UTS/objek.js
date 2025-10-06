@@ -115,40 +115,35 @@ function main() {
 
     GL.useProgram(SHADER_PROGRAM);
 
-    /*========================= OBJECTS ========================= */
-    var sphereData = generateSphere(1, 1.4, .2, 10, 10);
-    var ctrl = [
-        [0, 0, 0],
-        [1, 2, 0],
-        [3, 3, 1],
-        [5, 2, 1]
-    ];
-    var tubeData = generateBSpline(ctrl, 0.2, 50, 20);
-    var paraboloidData = generateEllipticParaboloid(.2, 1, 2, 50, 50);
+    /*========================= INTELEON ========================= */
+    const headData = generateSphere(0.45, 0.6, 0.5, 20, 20);
+    const crestData = generateBSpline([[0, 0.2, 0], [0, 1.0, -0.3], [0, 1.6, 0]], 0.05, 40, 12);
+    const bodyData = generateEllipticParaboloid(0.4, 0.6, 2, 30, 30);
+    const leftArmData = generateBSpline([[0, 0, 0], [-0.7, -0.8, 0.1]], 0.08, 20, 10);
+    const rightArmData = generateBSpline([[0, 0, 0], [0.7, -0.8, 0.1]], 0.08, 20, 10);
+    const leftLegData = generateBSpline([[0, 0, 0], [-0.3, -1.3, 0]], 0.1, 20, 10);
+    const rightLegData = generateBSpline([[0, 0, 0], [0.3, -1.3, 0]], 0.1, 20, 10);
+    const tailData = generateBSpline([[0, 0, 0], [0, -0.5, 0.3], [0, -1.2, 0.8], [0, -1.8, 0.2]], 0.07, 40, 16);
+    const capeData = generateEllipticParaboloid(1.2, 0.05, 1.2, 20, 20);
 
-    var Object1 = new MyObject(GL, SHADER_PROGRAM, _position, _color);
-    var Object2 = new MyObject(GL, SHADER_PROGRAM, _position, _color);
-    var Object3 = new MyObject(GL, SHADER_PROGRAM, _position, _color);
-    var Object4 = new MyObject(GL, SHADER_PROGRAM, _position, _color);
-    var Object5 = new MyObject(
-        GL, SHADER_PROGRAM,
-        _position, _color,
-        sphereData.vertices, sphereData.faces);
-    var Object6 = new MyObject(
-        GL, SHADER_PROGRAM,
-        _position, _color,
-        paraboloidData.vertices, paraboloidData.faces);
-    var tube = new MyObject(GL, SHADER_PROGRAM, _position, _color, 
-                          tubeData.vertices, tubeData.faces);
 
-    Object1.childs.push(Object2);
-    Object2.childs.push(Object5);
-    Object5.childs.push(Object6);
-    Object6.childs.push(tube);
+    const Body = new MyObject(GL, SHADER_PROGRAM, _position, _color, bodyData.vertices, bodyData.faces);
+    const Head = new MyObject(GL, SHADER_PROGRAM, _position, _color, headData.vertices, headData.faces);
+    const Crest = new MyObject(GL, SHADER_PROGRAM, _position, _color, crestData.vertices, crestData.faces);
+    const LeftArm = new MyObject(GL, SHADER_PROGRAM, _position, _color, leftArmData.vertices, leftArmData.faces);
+    const RightArm = new MyObject(GL, SHADER_PROGRAM, _position, _color, rightArmData.vertices, rightArmData.faces);
+    const LeftLeg = new MyObject(GL, SHADER_PROGRAM, _position, _color, leftLegData.vertices, leftLegData.faces);
+    const RightLeg = new MyObject(GL, SHADER_PROGRAM, _position, _color, rightLegData.vertices, rightLegData.faces);
+    const Tail = new MyObject(GL, SHADER_PROGRAM, _position, _color, tailData.vertices, tailData.faces);
+    const Cape = new MyObject(GL, SHADER_PROGRAM, _position, _color, capeData.vertices, capeData.faces);
 
-    Object1.setup();
-    // Object2.setup();
-    // Object5.setup();
+    Body.childs.push(Head, Crest, LeftArm, RightArm, LeftLeg, RightLeg, Tail, Cape);
+
+
+    Body.setup(); Head.setup(); Crest.setup();
+    LeftArm.setup(); RightArm.setup();
+    LeftLeg.setup(); RightLeg.setup();
+    Tail.setup(); Cape.setup();
 
 
     var PROJMATRIX = LIBS.get_projection(40, CANVAS.width / CANVAS.height, 1, 100);
@@ -184,36 +179,55 @@ function main() {
 
 
         // Animasi juga bisa dibuat di masing-masing object
-        LIBS.set_I4(Object1.MOVE_MATRIX);
-        LIBS.translateY(Object1.MOVE_MATRIX, -2);
-        LIBS.translateY(Object1.MOVE_MATRIX, -PHI);
-        LIBS.translateX(Object1.MOVE_MATRIX, THETA);
+        LIBS.set_I4(Body.MOVE_MATRIX);
+        LIBS.rotateY(Body.MOVE_MATRIX, time * 0.001);
 
-        LIBS.set_I4(Object2.MOVE_MATRIX);
-        LIBS.translateX(Object2.MOVE_MATRIX, 2.5);
-        LIBS.rotateY(Object2.MOVE_MATRIX, time * 0.001);
-        LIBS.rotateX(Object2.MOVE_MATRIX, time * 0.001);
+        // Head
+        LIBS.set_I4(Head.MOVE_MATRIX);
+        LIBS.translateY(Head.MOVE_MATRIX, 2.2);
 
-        LIBS.set_I4(Object5.MOVE_MATRIX);
-        LIBS.translateY(Object5.MOVE_MATRIX, 2.5);
-        LIBS.rotateZ(Object5.MOVE_MATRIX, time * 0.001);
-        LIBS.rotateX(Object5.MOVE_MATRIX, time * 0.001);
+        // Crest fin
+        LIBS.set_I4(Crest.MOVE_MATRIX);
+        LIBS.translateY(Crest.MOVE_MATRIX, 2.6);
+        LIBS.translateZ(Crest.MOVE_MATRIX, -0.1);
 
-        LIBS.set_I4(Object6.MOVE_MATRIX);
-        LIBS.translateY(Object6.MOVE_MATRIX, 2.5);
-        LIBS.rotateZ(Object6.MOVE_MATRIX, time * 0.001);
-        LIBS.rotateX(Object6.MOVE_MATRIX, time * 0.001);
+        // Arms
+        LIBS.set_I4(LeftArm.MOVE_MATRIX);
+        LIBS.translateX(LeftArm.MOVE_MATRIX, -0.6);
+        LIBS.translateY(LeftArm.MOVE_MATRIX, 1.0);
+        LIBS.rotateZ(LeftArm.MOVE_MATRIX, Math.PI / 8);
 
-        LIBS.set_I4(tube.MOVE_MATRIX);
-        LIBS.rotateY(tube.MOVE_MATRIX, time * 0.001);
-        LIBS.rotateX(tube.MOVE_MATRIX, time * 0.001);
+        LIBS.set_I4(RightArm.MOVE_MATRIX);
+        LIBS.translateX(RightArm.MOVE_MATRIX, 0.6);
+        LIBS.translateY(RightArm.MOVE_MATRIX, 1.0);
+        LIBS.rotateZ(RightArm.MOVE_MATRIX, -Math.PI / 8);
 
+        // Legs
+        LIBS.set_I4(LeftLeg.MOVE_MATRIX);
+        LIBS.translateX(LeftLeg.MOVE_MATRIX, -0.3);
+        LIBS.translateY(LeftLeg.MOVE_MATRIX, -1.8);
+
+        LIBS.set_I4(RightLeg.MOVE_MATRIX);
+        LIBS.translateX(RightLeg.MOVE_MATRIX, 0.3);
+        LIBS.translateY(RightLeg.MOVE_MATRIX, -1.8);
+
+        // Tail
+        LIBS.set_I4(Tail.MOVE_MATRIX);
+        LIBS.translateY(Tail.MOVE_MATRIX, -2);
+        LIBS.translateZ(Tail.MOVE_MATRIX, -0.5);
+        LIBS.rotateX(Tail.MOVE_MATRIX, Math.PI / 3);
+
+        // Cape fins
+        LIBS.set_I4(Cape.MOVE_MATRIX);
+        LIBS.translateY(Cape.MOVE_MATRIX, 0.5);
+        LIBS.translateZ(Cape.MOVE_MATRIX, -0.6);
+        LIBS.rotateX(Cape.MOVE_MATRIX, Math.PI / 6);
 
         GL.uniformMatrix4fv(_Pmatrix, false, PROJMATRIX);
         GL.uniformMatrix4fv(_Vmatrix, false, VIEWMATRIX);
 
 
-        Object1.render(_Mmatrix, LIBS.get_I4());
+        Body.render(_Mmatrix, LIBS.get_I4());
         // Object2.render(_Mmatrix);
 
         GL.flush();
