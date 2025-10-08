@@ -133,3 +133,41 @@ export function generateBSpline(controlPoints, radius = 0.2, segments = 50, slic
 
     return { vertices, faces };
 }
+
+export function generateFin(curvePoints, baseWidth = 0.4, depth = 0.08) {
+    const vertices = [];
+    const faces = [];
+
+    for (let i = 0; i < curvePoints.length; i++) {
+        const [x, y, z] = curvePoints[i];
+        const t = i / (curvePoints.length - 1);
+        // Width is narrow at both ends, widest at middle
+        const width = baseWidth * (0.4 + 0.8 * Math.sin(Math.PI * t));
+
+        const leftX = x - width / 2;
+        const rightX = x + width / 2;
+
+        vertices.push(leftX, y, z - depth / 2, 1.0, 0.9, 0.2);  // front left (yellow)
+        vertices.push(rightX, y, z - depth / 2, 1.0, 0.9, 0.2); // front right
+        vertices.push(leftX, y, z + depth / 2, 1.0, 0.9, 0.3);  // back left
+        vertices.push(rightX, y, z + depth / 2, 1.0, 0.9, 0.3); // back right
+    }
+
+    for (let i = 0; i < curvePoints.length - 1; i++) {
+        const base = i * 4;
+        const next = base + 4;
+
+        // Front
+        faces.push(base, base + 1, next + 1, base, next + 1, next);
+        // Back
+        faces.push(base + 2, next + 2, next + 3, base + 2, next + 3, base + 3);
+        // Sides
+        faces.push(base, next, next + 2, base, next + 2, base + 2);
+        faces.push(base + 1, base + 3, next + 3, base + 1, next + 3, next + 1);
+    }
+
+    return { vertices, faces };
+}
+
+
+
