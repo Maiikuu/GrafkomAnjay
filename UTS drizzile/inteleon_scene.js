@@ -67,7 +67,7 @@ export function createDrizzile(GL, SHADER_PROGRAM, _position, _color) {
     interleavedBelly,
     bellyData.faces
   );
-  LIBS.translateZ(Belly.MOVE_MATRIX, 0.35);
+  LIBS.translateZ(Belly.MOVE_MATRIX, 0.29);
   LIBS.translateY(Belly.MOVE_MATRIX, -0.1);
 
   // --- Kepala ---
@@ -87,7 +87,7 @@ export function createDrizzile(GL, SHADER_PROGRAM, _position, _color) {
   LIBS.translateY(Head.MOVE_MATRIX, 0.75);
 
   // --- Helm ---
-  const capData = generateEllipticParaboloid(0.42, 0.2, 0.3, 24, 16, darkBlue);
+  const capData = generateEllipticParaboloid(0.0, 0.0, 0.0, 0, 0, darkBlue);
   const interleavedCap = interleaveVertsColors(
     capData.vertices,
     capData.colors
@@ -105,7 +105,7 @@ export function createDrizzile(GL, SHADER_PROGRAM, _position, _color) {
   LIBS.rotateX(Cap.MOVE_MATRIX, -0.3);
 
   // --- Sirip Kepala ---
-  const finData = generateFin(0.6, 0.8, 0.04, 10, [1.0, 0.8], darkBlue);
+  const finData = generateFin(0.02, 0.8, 0.05, 10, [1.0, 0.9], darkBlue);
   const interleavedFin = interleaveVertsColors(
     finData.vertices,
     finData.colors
@@ -118,13 +118,13 @@ export function createDrizzile(GL, SHADER_PROGRAM, _position, _color) {
     interleavedFin,
     finData.faces
   );
-  LIBS.translateY(HeadFin.MOVE_MATRIX, 0.45);
-  LIBS.translateZ(HeadFin.MOVE_MATRIX, -0.2);
-  LIBS.rotateX(HeadFin.MOVE_MATRIX, 1.8);
-  LIBS.rotateY(HeadFin.MOVE_MATRIX, -0.1);
+  LIBS.translateY(HeadFin.MOVE_MATRIX, 0.0);
+  LIBS.translateZ(HeadFin.MOVE_MATRIX, 0.0);
+  LIBS.rotateX(HeadFin.MOVE_MATRIX, 0.0);
+  LIBS.rotateY(HeadFin.MOVE_MATRIX, 0.0);
 
   // --- Poni Ungu  ---
-  const hairData = generateFin(0.9, 0.5, 0.05, 20, [1.0], purple);
+  const hairData = generateFin(0.9, 0.5, 0.1, 20, [1.0], purple);
   const interleavedHair = interleaveVertsColors(
     hairData.vertices,
     hairData.colors
@@ -137,15 +137,15 @@ export function createDrizzile(GL, SHADER_PROGRAM, _position, _color) {
     interleavedHair,
     hairData.faces
   );
-  LIBS.translateX(HeadBang.MOVE_MATRIX, -0.25);
+  LIBS.translateX(HeadBang.MOVE_MATRIX, 0.0);
   LIBS.translateY(HeadBang.MOVE_MATRIX, 0.2);
-  LIBS.translateZ(HeadBang.MOVE_MATRIX, 0.15);
-  LIBS.rotateZ(HeadBang.MOVE_MATRIX, 1.0);
-  LIBS.rotateY(HeadBang.MOVE_MATRIX, -0.2);
-  LIBS.rotateX(HeadBang.MOVE_MATRIX, 0.3);
+  LIBS.translateZ(HeadBang.MOVE_MATRIX, 0.35);
+  LIBS.rotateZ(HeadBang.MOVE_MATRIX, 0.45);
+  LIBS.rotateY(HeadBang.MOVE_MATRIX, -0.50);
+  LIBS.rotateX(HeadBang.MOVE_MATRIX, -0.30);
 
   // --- Mata ---
-  const eyeLData = generateEllipsoid(0.18, 0.05, 0.1, 12, 12, white);
+  const eyeLData = generateEllipsoid(0.18, 0.1, 0.1, 12, 12, white);
   const interleavedEyeL = interleaveVertsColors(
     eyeLData.vertices,
     eyeLData.colors
@@ -160,7 +160,7 @@ export function createDrizzile(GL, SHADER_PROGRAM, _position, _color) {
   );
   LIBS.translateY(LeftEye.MOVE_MATRIX, 0.1);
   LIBS.translateX(LeftEye.MOVE_MATRIX, -0.15);
-  LIBS.translateZ(LeftEye.MOVE_MATRIX, 0.35);
+  LIBS.translateZ(LeftEye.MOVE_MATRIX, 0.3);
   LIBS.rotateY(LeftEye.MOVE_MATRIX, 0.1);
 
   const pupilLData = generateSphere(0.04, 8, 8, black);
@@ -176,9 +176,9 @@ export function createDrizzile(GL, SHADER_PROGRAM, _position, _color) {
     interleavedPupilL,
     pupilLData.faces
   );
-  LIBS.translateZ(LeftPupil.MOVE_MATRIX, 0.06);
+  LIBS.translateZ(LeftPupil.MOVE_MATRIX, 0.09);
 
-  const eyeRData = generateEllipsoid(0.18, 0.05, 0.1, 12, 12, white);
+  const eyeRData = generateEllipsoid(0.18, 0.1, 0.1, 12, 12, white);
   const interleavedEyeR = interleaveVertsColors(
     eyeRData.vertices,
     eyeRData.colors
@@ -193,7 +193,7 @@ export function createDrizzile(GL, SHADER_PROGRAM, _position, _color) {
   );
   LIBS.translateY(RightEye.MOVE_MATRIX, 0.1);
   LIBS.translateX(RightEye.MOVE_MATRIX, 0.15);
-  LIBS.translateZ(RightEye.MOVE_MATRIX, 0.35);
+  LIBS.translateZ(RightEye.MOVE_MATRIX, 0.3);
   LIBS.rotateY(RightEye.MOVE_MATRIX, -0.1);
 
   const pupilRData = generateSphere(0.04, 8, 8, black);
@@ -209,7 +209,7 @@ export function createDrizzile(GL, SHADER_PROGRAM, _position, _color) {
     interleavedPupilR,
     pupilRData.faces
   );
-  LIBS.translateZ(RightPupil.MOVE_MATRIX, 0.06);
+  LIBS.translateZ(RightPupil.MOVE_MATRIX, 0.10);
 
   // --- Pipi ---
   const cheekLData = generateSphere(0.1, 8, 8, darkBlue);
@@ -269,7 +269,7 @@ export function createDrizzile(GL, SHADER_PROGRAM, _position, _color) {
   );
 
   LIBS.translateY(Mouth.MOVE_MATRIX, -0.15);
-  LIBS.translateZ(Mouth.MOVE_MATRIX, 0.41);
+  LIBS.translateZ(Mouth.MOVE_MATRIX, 0.34);
 
   // --- Ekor ---
   const tailPoints = [
@@ -325,8 +325,8 @@ export function createDrizzile(GL, SHADER_PROGRAM, _position, _color) {
     interleavedUpperArmL,
     LUpperArmData.faces
   );
-  LIBS.translateY(LUpperArm.MOVE_MATRIX, 0.4);
-  LIBS.translateX(LUpperArm.MOVE_MATRIX, -0.3);
+  LIBS.translateY(LUpperArm.MOVE_MATRIX, 0.3);
+  LIBS.translateX(LUpperArm.MOVE_MATRIX, -0.2);
   LIBS.rotateZ(LUpperArm.MOVE_MATRIX, -0.9);
   LIBS.rotateX(LUpperArm.MOVE_MATRIX, 1.3);
 
@@ -409,8 +409,8 @@ export function createDrizzile(GL, SHADER_PROGRAM, _position, _color) {
     interleavedUpperArmR,
     RUpperArmData.faces
   );
-  LIBS.translateY(RUpperArm.MOVE_MATRIX, 0.4);
-  LIBS.translateX(RUpperArm.MOVE_MATRIX, 0.3);
+  LIBS.translateY(RUpperArm.MOVE_MATRIX, 0.3);
+  LIBS.translateX(RUpperArm.MOVE_MATRIX, 0.2);
   LIBS.rotateZ(RUpperArm.MOVE_MATRIX, 0.9);
   LIBS.rotateX(RUpperArm.MOVE_MATRIX, 1.3);
 
@@ -512,8 +512,8 @@ export function createDrizzile(GL, SHADER_PROGRAM, _position, _color) {
   );
   LIBS.translateY(LFoot.MOVE_MATRIX, -0.7);
   LIBS.translateX(LFoot.MOVE_MATRIX, 0.1);
-  LIBS.rotateX(LFoot.MOVE_MATRIX, 1.57);
-  LIBS.translateZ(LFoot.MOVE_MATRIX, 0.0);
+  LIBS.rotateX(LFoot.MOVE_MATRIX, 0.5);
+  LIBS.translateZ(LFoot.MOVE_MATRIX, 0.05);
 
   // --- Kaki Kanan ---
   const RLegPoints = [
@@ -553,7 +553,7 @@ export function createDrizzile(GL, SHADER_PROGRAM, _position, _color) {
   );
   LIBS.translateY(RFoot.MOVE_MATRIX, -0.7);
   LIBS.translateX(RFoot.MOVE_MATRIX, -0.1);
-  LIBS.rotateX(RFoot.MOVE_MATRIX, 1.57);
+  LIBS.rotateX(RFoot.MOVE_MATRIX, 0.5);
   LIBS.translateZ(RFoot.MOVE_MATRIX, 0.0);
 
   // --- Perakitan Hierarki ---
