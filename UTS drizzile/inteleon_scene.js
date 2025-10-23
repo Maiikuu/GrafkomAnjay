@@ -4,6 +4,7 @@ import {
   generateEllipticParaboloid,
   generateFin,
   generateSphere,
+  generateGrass,
 } from "./main.js";
 import { MyObject } from "./MyObject.js";
 
@@ -580,9 +581,101 @@ export function createDrizzile(GL, SHADER_PROGRAM, _position, _color) {
 
   Body.childs.push(Head, Belly, Tail, LUpperArm, RUpperArm, LLeg, RLeg);
 
-  // Kembalikan objek yang berisi semua bagian penting
+  // --- Ladang (Field) ---
+  const fieldColor = [0.3, 0.6, 0.2]; // Warna rumput
+  const fieldData = generateEllipsoid(15, 0.1, 15, 32, 16, fieldColor);
+  const interleavedField = interleaveVertsColors(
+    fieldData.vertices,
+    fieldData.colors
+  );
+  const Field = new MyObject(
+    GL,
+    SHADER_PROGRAM,
+    _position,
+    _color,
+    interleavedField,
+    fieldData.faces
+  );
+
+  // Permukaan atas ladang adalah -1.68 (posisi) + 0.1 (radius) = -1.58
+  const fieldSurfaceY = -1.58;
+  LIBS.translateY(Field.MOVE_MATRIX, -1.68); // Pindahkan pusat ladang ke bawah
+
+  // --- Rumput (Grass) ---
+  const grassGreen = [0.1, 0.8, 0.15]; // Warna rumput yang sedikit beda
+  const grassData = generateGrass(
+    15,
+    fieldSurfaceY,
+    300,
+    0.4,
+    0.05,
+    4,
+    grassGreen
+  );
+  const interleavedGrass = interleaveVertsColors(
+    grassData.vertices,
+    grassData.colors
+  );
+  const Grass = new MyObject(
+    GL,
+    SHADER_PROGRAM,
+    _position,
+    _color,
+    interleavedGrass,
+    grassData.faces
+  );
+
+  // --- Pohon (Tree) ---
+  const brown = [0.4, 0.2, 0.05];
+  const darkGreen = [0.0, 0.4, 0.1];
+  const treeHeight = 2.5;
+
+  // Batang Pohon
+  const trunkPoints = [
+    [0, 0, 0],
+    [0, treeHeight, 0],
+  ];
+  const trunkData = generateBSplineTube(trunkPoints, 0.2, 3, 10, brown);
+  const interleavedTrunk = interleaveVertsColors(
+    trunkData.vertices,
+    trunkData.colors
+  );
+  const Trunk = new MyObject(
+    GL,
+    SHADER_PROGRAM,
+    _position,
+    _color,
+    interleavedTrunk,
+    trunkData.faces
+  );
+
+  // Daun Pohon
+  const leavesData = generateEllipsoid(1.0, 1.2, 1.0, 16, 12, darkGreen);
+  const interleavedLeaves = interleaveVertsColors(
+    leavesData.vertices,
+    leavesData.colors
+  );
+  const Leaves = new MyObject(
+    GL,
+    SHADER_PROGRAM,
+    _position,
+    _color,
+    interleavedLeaves,
+    leavesData.faces
+  );
+  LIBS.translateY(Leaves.MOVE_MATRIX, treeHeight);
+
+  Trunk.childs.push(Leaves);
+
+  LIBS.translateY(Trunk.MOVE_MATRIX, fieldSurfaceY);
+  LIBS.translateX(Trunk.MOVE_MATRIX, 4.0);
+  LIBS.translateZ(Trunk.MOVE_MATRIX, -3.0);
+
   return {
     root: Body,
+    field: Field,
+    grass: Grass,
+    tree: Trunk,
     head: Head,
     tail: Tail,
     leftArm: LUpperArm,

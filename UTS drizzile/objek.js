@@ -100,6 +100,9 @@ function main() {
   // === BUILD MODEL ===
   const Drizzile = createDrizzile(GL, SHADER_PROGRAM, _position, _color);
   const Body = Drizzile.root;
+  const Field = Drizzile.field;
+  const Grass = Drizzile.grass;
+  const Tree = Drizzile.tree; // <-- AMBIL OBJEK POHON
   const LUpperArm = Drizzile.leftArm;
   const RUpperArm = Drizzile.rightArm;
   const Tail = Drizzile.tail;
@@ -111,6 +114,9 @@ function main() {
   const tail_original_matrix = Array.from(Tail.MOVE_MATRIX);
 
   Body.setup();
+  Field.setup();
+  Grass.setup();
+  Tree.setup();
 
   // === MATRICES ===
   const PROJMATRIX = LIBS.get_projection(
@@ -144,12 +150,12 @@ function main() {
     // 2. Animasi Ayunan Tangan Kanan (Maju-Mundur)
     RUpperArm.MOVE_MATRIX = Array.from(r_arm_original_matrix);
     const waveAngleR = Math.sin(time_in_seconds * 1.2) * 0.15;
-    LIBS.rotateX(RUpperArm.MOVE_MATRIX, waveAngleR); // <-- Diubah dari rotateZ ke rotateX
+    LIBS.rotateX(RUpperArm.MOVE_MATRIX, waveAngleR);
 
     // 3. Animasi Ayunan Tangan Kiri (Maju-Mundur)
     LUpperArm.MOVE_MATRIX = Array.from(l_arm_original_matrix);
     const waveAngleL = Math.cos(time_in_seconds * 1.2) * 0.15;
-    LIBS.rotateX(LUpperArm.MOVE_MATRIX, waveAngleL); // <-- Diubah dari rotateZ ke rotateX
+    LIBS.rotateX(LUpperArm.MOVE_MATRIX, waveAngleL);
 
     // 4. Animasi Gerakan Ekor
     Tail.MOVE_MATRIX = Array.from(tail_original_matrix);
@@ -173,6 +179,9 @@ function main() {
     GL.uniformMatrix4fv(_Pmatrix, false, PROJMATRIX);
     GL.uniformMatrix4fv(_Vmatrix, false, VIEWMATRIX);
 
+    Field.render(_Mmatrix, MOVEMATRIX);
+    Grass.render(_Mmatrix, MOVEMATRIX);
+    Tree.render(_Mmatrix, MOVEMATRIX);
     Body.render(_Mmatrix, MOVEMATRIX);
 
     GL.flush();
