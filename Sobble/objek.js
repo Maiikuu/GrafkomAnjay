@@ -1,4 +1,5 @@
 import { createSobble } from "./sobble_scene.js";
+import { createEnvironment } from "./environment.js";
 
 function main() {
     // === CANVAS SETUP ===
@@ -10,6 +11,7 @@ function main() {
     let drag = false, x_prev = 0, y_prev = 0;
     let dX = 0, dY = 0;
     let THETA = 0, PHI = 0;
+    let zoomDistance = 30; // PINDAHKAN KE SCOPE GLOBAL
     const SPEED = 0.05;
     const FRICTION = 0.15;
 
@@ -30,11 +32,20 @@ function main() {
         y_prev = e.pageY;
     });
 
+    // MOUSE WHEEL ZOOM
+    CANVAS.addEventListener("wheel", e => {
+        e.preventDefault();
+        zoomDistance += e.deltaY * 0.01;
+        zoomDistance = Math.max(15, Math.min(50, zoomDistance)); // Limit zoom
+    });
+
     window.addEventListener("keydown", e => {
         if (e.key === "w") dY -= SPEED;
         else if (e.key === "a") dX -= SPEED;
         else if (e.key === "s") dY += SPEED;
         else if (e.key === "d") dX += SPEED;
+        else if (e.key === "q") zoomDistance = Math.max(15, zoomDistance - 1); // Zoom in
+        else if (e.key === "e") zoomDistance = Math.min(50, zoomDistance + 1); // Zoom out
     });
 
     function mouseUp() {
@@ -46,7 +57,7 @@ function main() {
 
     // === WEBGL SETUP ===
     const GL = CANVAS.getContext("webgl", { antialias: true });
-    GL.clearColor(0.8, 0.9, 1.0, 1.0);
+    GL.clearColor(0.6, 0.85, 0.95, 1.0);
     GL.clearDepth(1.0);
     GL.enable(GL.DEPTH_TEST);
     GL.depthFunc(GL.LEQUAL);
@@ -103,13 +114,14 @@ function main() {
     GL.useProgram(SHADER_PROGRAM);
 
     // === MATRICES ===
-    const PROJECTION_MATRIX = LIBS.get_projection(40, CANVAS.width / CANVAS.height, 1, 100);
+    const PROJECTION_MATRIX = LIBS.get_projection(50, CANVAS.width / CANVAS.height, 1, 100);
     const VIEW_MATRIX = LIBS.get_I4();
     const MODEL_MATRIX = LIBS.get_I4();
 
-    LIBS.translateZ(VIEW_MATRIX, -25);
+    // === BUILD MODELS ===
+    const Environment = createEnvironment(GL, SHADER_PROGRAM, _position, _color);
+    Environment.setup();
 
-    // === BUILD MODEL ===
     const Sobble = createSobble(GL, SHADER_PROGRAM, _position, _color);
     Sobble.setup();
 
@@ -119,6 +131,11 @@ function main() {
         GL.viewport(0, 0, CANVAS.width, CANVAS.height);
         GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
 
+        // Update VIEW_MATRIX dengan zoom yang dinamis
+        LIBS.set_I4(VIEW_MATRIX);
+        LIBS.translateZ(VIEW_MATRIX, -zoomDistance);
+        LIBS.translateY(VIEW_MATRIX, -2);
+
         LIBS.set_I4(MODEL_MATRIX);
         LIBS.rotateY(MODEL_MATRIX, THETA);
         LIBS.rotateX(MODEL_MATRIX, PHI);
@@ -127,6 +144,7 @@ function main() {
         GL.uniformMatrix4fv(_VMatrix, false, VIEW_MATRIX);
         GL.uniformMatrix4fv(_MMatrix, false, MODEL_MATRIX);
 
+        Environment.render(_MMatrix, MODEL_MATRIX);
         Sobble.render(_MMatrix, MODEL_MATRIX);
 
         GL.flush();
