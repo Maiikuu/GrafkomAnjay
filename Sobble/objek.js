@@ -11,7 +11,7 @@ function main() {
     let drag = false, x_prev = 0, y_prev = 0;
     let dX = 0, dY = 0;
     let THETA = 0, PHI = 0;
-    let zoomDistance = 30; // PINDAHKAN KE SCOPE GLOBAL
+    let zoomDistance = 30;
     const SPEED = 0.05;
     const FRICTION = 0.15;
 
@@ -32,11 +32,10 @@ function main() {
         y_prev = e.pageY;
     });
 
-    // MOUSE WHEEL ZOOM
     CANVAS.addEventListener("wheel", e => {
         e.preventDefault();
         zoomDistance += e.deltaY * 0.01;
-        zoomDistance = Math.max(15, Math.min(50, zoomDistance)); // Limit zoom
+        zoomDistance = Math.max(15, Math.min(50, zoomDistance));
     });
 
     window.addEventListener("keydown", e => {
@@ -44,8 +43,8 @@ function main() {
         else if (e.key === "a") dX -= SPEED;
         else if (e.key === "s") dY += SPEED;
         else if (e.key === "d") dX += SPEED;
-        else if (e.key === "q") zoomDistance = Math.max(15, zoomDistance - 1); // Zoom in
-        else if (e.key === "e") zoomDistance = Math.min(50, zoomDistance + 1); // Zoom out
+        else if (e.key === "q") zoomDistance = Math.max(15, zoomDistance - 1);
+        else if (e.key === "e") zoomDistance = Math.min(50, zoomDistance + 1);
     });
 
     function mouseUp() {
@@ -62,27 +61,50 @@ function main() {
     GL.enable(GL.DEPTH_TEST);
     GL.depthFunc(GL.LEQUAL);
 
-    // === SHADERS ===
+    // === SHADERS DENGAN LIGHTING DARI ATAS ===
     const shader_vertex_source = `
-        attribute vec3 position;
-        attribute vec3 color;
-        uniform mat4 PMatrix;
-        uniform mat4 VMatrix;
-        uniform mat4 MMatrix;
-        varying vec3 vColor;
-        void main(void) {
-            gl_Position = PMatrix * VMatrix * MMatrix * vec4(position, 1.0);
-            vColor = color;
-        }
-    `;
+    attribute vec3 position;
+    attribute vec3 color;
+    uniform mat4 PMatrix;
+    uniform mat4 VMatrix;
+    uniform mat4 MMatrix;
+    uniform vec3 lightDirection;
+    
+    varying vec3 vColor;
+    varying vec3 vNormal;
+    varying vec3 vLightDir;
+    
+    void main(void) {
+        gl_Position = PMatrix * VMatrix * MMatrix * vec4(position, 1.0);
+        vNormal = normalize(position); // Ini benar untuk sphere/ellipsoid
+        
+        vLightDir = normalize(lightDirection);
+        vColor = color;
+    }
+`;
 
-    const shader_fragment_source = `
-        precision mediump float;
-        varying vec3 vColor;
-        void main(void) {
-            gl_FragColor = vec4(vColor, 1.0);
-        }
-    `;
+const shader_fragment_source = `
+    precision mediump float;
+    
+    varying vec3 vColor;
+    varying vec3 vNormal;
+    varying vec3 vLightDir;
+    
+    void main(void) {
+        // Ambient light 
+        vec3 ambient = vColor * 0.65;
+        
+        // Diffuse light 
+        float diffuse = abs(dot(vNormal, vLightDir));
+        vec3 diffuseColor = vColor * diffuse * 0.50;
+        
+        // Combine
+        vec3 finalColor = ambient + diffuseColor;
+        
+        gl_FragColor = vec4(finalColor, 1.0);
+    }
+`;
+
 
     function get_shader(source, type) {
         const shader = GL.createShader(type);
@@ -108,10 +130,15 @@ function main() {
     const _PMatrix = GL.getUniformLocation(SHADER_PROGRAM, "PMatrix");
     const _VMatrix = GL.getUniformLocation(SHADER_PROGRAM, "VMatrix");
     const _MMatrix = GL.getUniformLocation(SHADER_PROGRAM, "MMatrix");
+    const _lightDirection = GL.getUniformLocation(SHADER_PROGRAM, "lightDirection");
 
     GL.enableVertexAttribArray(_position);
     GL.enableVertexAttribArray(_color);
     GL.useProgram(SHADER_PROGRAM);
+
+    // Set light direction
+    const lightDir = [0, -1, 0]; 
+    GL.uniform3fv(_lightDirection, lightDir);
 
     // === MATRICES ===
     const PROJECTION_MATRIX = LIBS.get_projection(50, CANVAS.width / CANVAS.height, 1, 100);
@@ -131,7 +158,6 @@ function main() {
         GL.viewport(0, 0, CANVAS.width, CANVAS.height);
         GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
 
-        // Update VIEW_MATRIX dengan zoom yang dinamis
         LIBS.set_I4(VIEW_MATRIX);
         LIBS.translateZ(VIEW_MATRIX, -zoomDistance);
         LIBS.translateY(VIEW_MATRIX, -2);

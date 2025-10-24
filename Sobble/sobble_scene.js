@@ -3,8 +3,8 @@ import { MyObject } from "./MyObject.js";
 
 export function createSobble(GL, SHADER_PROGRAM, _position, _color) {
     // Warna Sobble - lebih gelap dengan kontras lebih baik
-    const SOBBLE_BLUE = [0.35, 0.65, 0.8];      // Body biru
-    const SOBBLE_BLUE_DARK = [0.25, 0.55, 0.7]; // Untuk variasi ekor
+    const SOBBLE_BLUE = [0.35, 0.65, 0.8];     
+    const SOBBLE_BLUE_DARK = [0.25, 0.55, 0.7]; 
     const BELLY_LIGHT = [0.65, 0.8, 0.85];
     const DARK_BLUE = [0.08, 0.15, 0.4];
     const YELLOW_FIN = [0.85, 0.75, 0.0];
@@ -98,9 +98,9 @@ export function createSobble(GL, SHADER_PROGRAM, _position, _color) {
     belly.pos = [0, 0.9, 0.4];
     allParts.push(belly);
 
-    // === SPIRAL TAIL - dengan segmen lebih banyak dan warna bervariasi ===
+    // === SPIRAL TAIL
     const tailCtrlPoints = [];
-    const spiralSegments = 25; // Lebih banyak untuk detail lebih
+    const spiralSegments = 50; 
     const centerX = 0, centerY = 1.6, centerZ = -3;
     
     for (let i = 0; i < spiralSegments; i++) {
@@ -115,21 +115,21 @@ export function createSobble(GL, SHADER_PROGRAM, _position, _color) {
         tailCtrlPoints.push([x, y, z]);
     }
 
-    // Tail main - body biru dengan detail lebih
+    // Tail main
     const tailMainPoints = tailCtrlPoints.slice(0, -4);
     const tailData = generateBSplineTube(tailMainPoints, 0.52, 16, 30, SOBBLE_BLUE);
     const tail = new MyObject(GL, SHADER_PROGRAM, _position, _color, tailData);
     tail.pos = [0, 0, 0];
     allParts.push(tail);
 
-    // Tail middle - transisi warna
+    // Tail middle
     const tailMidPoints = tailCtrlPoints.slice(-8, -2);
     const tailMidData = generateBSplineTube(tailMidPoints, 0.45, 16, 30, SOBBLE_BLUE_DARK);
     const tailMid = new MyObject(GL, SHADER_PROGRAM, _position, _color, tailMidData);
     tailMid.pos = [0, 0, 0];
     allParts.push(tailMid);
 
-    // Tail tip (dark blue) - ujung
+    // Tail tip
     const tailTipCtrlPoints = tailCtrlPoints.slice(-5);
     const tailTipData = generateBSplineTube(tailTipCtrlPoints, 0.38, 16, 30, DARK_BLUE);
     const tailTip = new MyObject(GL, SHADER_PROGRAM, _position, _color, tailTipData);
