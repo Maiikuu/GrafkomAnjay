@@ -1,4 +1,4 @@
-import { createDrizzile } from "./inteleon_scene.js";
+import { createDrizzile } from "./drizzile_scene.js";
 
 function main() {
   // === CANVAS SETUP ===
