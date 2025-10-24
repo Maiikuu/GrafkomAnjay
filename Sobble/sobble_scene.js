@@ -19,17 +19,18 @@ export function createSobble(GL, SHADER_PROGRAM, _position, _color) {
     head.pos = [0, 2.8, 0.5];
     allParts.push(head);
 
+    // === FIN BORDER (DARK BLUE - FRONT/BATANG) ===
+    const finBorderData = generateEllipsoid(0.2, 3.8, 1.3, 24, 32, [0.0, 0.1, 0.35]); // Lebih lebar, tinggi, dan gelap
+    const finBorder = new MyObject(GL, SHADER_PROGRAM, _position, _color, finBorderData);
+    finBorder.pos = [0, 5.25, 0.35]; 
+    allParts.push(finBorder);
+
     // === FIN SAIL (YELLOW - BEHIND) ===
     const finSailData = generateEllipsoid(0.15, 4.15, 1.8, 24, 32, YELLOW_FIN);
     const finSail = new MyObject(GL, SHADER_PROGRAM, _position, _color, finSailData);
-    finSail.pos = [0, 5.625, -0.2];
+    finSail.pos = [0, 5.625, -0.2]; 
     allParts.push(finSail);
 
-    // === FIN BORDER (DARK BLUE - FRONT/BATANG) ===
-    const finBorderData = generateEllipsoid(0.12, 3.5, 1.2, 24, 32, DARK_BLUE);
-    const finBorder = new MyObject(GL, SHADER_PROGRAM, _position, _color, finBorderData);
-    finBorder.pos = [0, 5.25, 0.3];
-    allParts.push(finBorder);
 
     // === EYES LEFT (TANPA OUTLINE BESAR) ===
     const eyeWhiteLeftData = generateSphere(0.7, 32, 16, WHITE);
