@@ -65,11 +65,6 @@ export function createSobble(GL, SHADER_PROGRAM, _position, _color) {
     allParts.push(highlightRight);
 
     // === MOUTH ===
-    const mouthInsideData = generateEllipsoid(0.65, 0.45, 0.08, 32, 16, PINK_MOUTH);
-    const mouthInside = new MyObject(GL, SHADER_PROGRAM, _position, _color, mouthInsideData);
-    mouthInside.pos = [0, 2.15, 2.18];
-    allParts.push(mouthInside);
-
     const mouthOutlineData = generateEllipsoid(0.72, 0.5, 0.08, 32, 16, DARK_BLUE);
     const mouthOutline = new MyObject(GL, SHADER_PROGRAM, _position, _color, mouthOutlineData);
     mouthOutline.pos = [0, 2.15, 2.19];
