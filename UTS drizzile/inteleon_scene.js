@@ -246,6 +246,8 @@ export function createDrizzile(GL, SHADER_PROGRAM, _position, _color) {
   LIBS.translateX(RCheekSpot.MOVE_MATRIX, 0.25);
   LIBS.translateZ(RCheekSpot.MOVE_MATRIX, 0.3);
 
+
+  // ---mulut---
   const mouthPoints = [
     [-0.15, 0.0, 0],
     [-0.07, 0.05, 0],
