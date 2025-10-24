@@ -73,54 +73,33 @@ export class MyObject {
         });
     }
 
-    // render(_MMatrix, PARENT_MATRIX) {
-
-    //     this.MODEL_MATRIX = LIBS.multiply(this.MOVE_MATRIX, this.POSITION_MATRIX);
-    //     this.MODEL_MATRIX = LIBS.multiply(this.MOVE_MATRIX, PARENT_MATRIX);
-
-    //     this.GL.useProgram(this.SHADER_PROGRAM);
-
-
-    //     this.GL.uniformMatrix4fv(_MMatrix, false, this.MODEL_MATRIX);
-
-
-    //     this.GL.vertexAttribPointer(this._position, 3, this.GL.FLOAT, false, 4 * (3 + 3), 0);
-    //     this.GL.vertexAttribPointer(this._color, 3, this.GL.FLOAT, false, 4 * (3 + 3), 4 * 3);
-
-    //     this.GL.bindBuffer(this.GL.ARRAY_BUFFER, this.OBJECT_VERTEX);
-    //     this.GL.bindBuffer(this.GL.ELEMENT_ARRAY_BUFFER, this.OBJECT_FACES);
-
-    //     this.GL.drawElements(this.GL.TRIANGLES, this.faces.length, this.GL.UNSIGNED_SHORT, 0);
-
-    //     this.childs.forEach(child => {
-    //         child.render(_MMatrix, this.MODEL_MATRIX);
-    //     });
-    // }
-
-
     render(_MMatrix, PARENT_MATRIX) {
-        // Local = just MOVE_MATRIX
-        // this.MODEL_MATRIX = LIBS.multiply(PARENT_MATRIX, this.MOVE_MATRIX);
-        // this.MODEL_MATRIX = LIBS.multiply(this.MOVE_MATRIX, this.POSITION_MATRIX);
+        // ✅ Prevent crash if uniform location is invalid
+        if (!(_MMatrix instanceof WebGLUniformLocation)) {
+            console.warn("Invalid or missing uniform location:", _MMatrix, "in object:", this);
+            return;
+        }
+
+        // Compute combined transformation
         this.MODEL_MATRIX = LIBS.multiply(this.MOVE_MATRIX, PARENT_MATRIX);
 
+        // Activate program and pass matrices
         this.GL.useProgram(this.SHADER_PROGRAM);
         this.GL.uniformMatrix4fv(_MMatrix, false, this.MODEL_MATRIX);
 
-        // Bind vertex buffer + set attributes
+        // === BIND BUFFERS ===
         this.GL.bindBuffer(this.GL.ARRAY_BUFFER, this.OBJECT_VERTEX);
-        const stride = 4 * 6; // 6 floats per vertex
+        const stride = 4 * 6; // 6 floats per vertex (3 position + 3 color)
         this.GL.vertexAttribPointer(this._position, 3, this.GL.FLOAT, false, stride, 0);
         this.GL.vertexAttribPointer(this._color, 3, this.GL.FLOAT, false, stride, 4 * 3);
 
         this.GL.bindBuffer(this.GL.ELEMENT_ARRAY_BUFFER, this.OBJECT_FACES);
         this.GL.drawElements(this.GL.TRIANGLES, this.faces.length, this.GL.UNSIGNED_SHORT, 0);
 
-        // Draw children with this MODEL_MATRIX as parent
+        // === RENDER CHILD OBJECTS ===
         this.childs.forEach(child => {
             child.render(_MMatrix, this.MODEL_MATRIX);
         });
     }
-
 
 }

@@ -1,99 +1,147 @@
 import { createEvolutionScene } from "./evolution_scene.js";
 
 function main() {
+    // === CANVAS SETUP ===
     const CANVAS = document.getElementById("mycanvas");
     CANVAS.width = window.innerWidth;
     CANVAS.height = window.innerHeight;
 
-    const GL = CANVAS.getContext("webgl", { antialias: true });
-    if (!GL) {
-        alert("WebGL context failed to initialize");
-        return;
+    // === MOUSE CONTROLS ===
+    let drag = false, x_prev = 0, y_prev = 0;
+    let dX = 0, dY = 0;
+    let THETA = 0, PHI = 0;
+    let zoomDistance = 30;
+    const SPEED = 0.05;
+    const FRICTION = 0.15;
+
+    CANVAS.addEventListener("mousedown", e => {
+        drag = true;
+        x_prev = e.pageX;
+        y_prev = e.pageY;
+    });
+    CANVAS.addEventListener("mouseup", () => drag = false);
+    CANVAS.addEventListener("mouseout", () => drag = false);
+    CANVAS.addEventListener("mousemove", e => {
+        if (!drag) return;
+        dX = (e.pageX - x_prev) * 2 * Math.PI / CANVAS.width;
+        dY = (e.pageY - y_prev) * 2 * Math.PI / CANVAS.height;
+        THETA += dX;
+        PHI += dY;
+        x_prev = e.pageX;
+        y_prev = e.pageY;
+    });
+
+    CANVAS.addEventListener("wheel", e => {
+        e.preventDefault();
+        zoomDistance += e.deltaY * 0.01;
+        zoomDistance = Math.max(15, Math.min(50, zoomDistance));
+    });
+
+    function mouseUp() {
+        dX *= (1 - FRICTION);
+        dY *= (1 - FRICTION);
+        THETA += dX;
+        PHI += dY;
     }
 
-    const vertexShader = `
+    // === WEBGL SETUP ===
+    const GL = CANVAS.getContext("webgl", { antialias: true });
+    GL.clearColor(0.6, 0.85, 0.95, 1.0);
+    GL.clearDepth(1.0);
+    GL.enable(GL.DEPTH_TEST);
+    GL.depthFunc(GL.LEQUAL);
+
+    // === SHADERS ===
+    const shader_vertex_source = `
         attribute vec3 position;
         attribute vec3 color;
-        uniform mat4 Pmatrix;
-        uniform mat4 Vmatrix;
-        uniform mat4 Mmatrix;
+        uniform mat4 PMatrix;
+        uniform mat4 VMatrix;
+        uniform mat4 MMatrix;
         varying vec3 vColor;
-        void main() {
-            gl_Position = Pmatrix*Vmatrix*Mmatrix*vec4(position, 1.);
+        void main(void) {
+            gl_Position = PMatrix * VMatrix * MMatrix * vec4(position, 1.0);
             vColor = color;
         }`;
 
-    const fragmentShader = `
+    const shader_fragment_source = `
         precision mediump float;
         varying vec3 vColor;
-        void main() {
-            gl_FragColor = vec4(vColor, 1.);
+        void main(void) {
+            gl_FragColor = vec4(vColor, 1.0);
         }`;
 
-    const _shader = GL.createShader;
-    const vertShader = _shader(GL, vertexShader, "vertex");
-    const fragShader = _shader(GL, fragmentShader, "fragment");
+    function get_shader(source, type) {
+        const shader = GL.createShader(type);
+        GL.shaderSource(shader, source);
+        GL.compileShader(shader);
+        if (!GL.getShaderParameter(shader, GL.COMPILE_STATUS)) {
+            console.error("Shader error:", GL.getShaderInfoLog(shader));
+            return null;
+        }
+        return shader;
+    }
+
+    const shader_vertex = get_shader(shader_vertex_source, GL.VERTEX_SHADER);
+    const shader_fragment = get_shader(shader_fragment_source, GL.FRAGMENT_SHADER);
 
     const SHADER_PROGRAM = GL.createProgram();
-    GL.attachShader(SHADER_PROGRAM, vertShader);
-    GL.attachShader(SHADER_PROGRAM, fragShader);
+    GL.attachShader(SHADER_PROGRAM, shader_vertex);
+    GL.attachShader(SHADER_PROGRAM, shader_fragment);
     GL.linkProgram(SHADER_PROGRAM);
 
     const _position = GL.getAttribLocation(SHADER_PROGRAM, "position");
     const _color = GL.getAttribLocation(SHADER_PROGRAM, "color");
-    
+    const _PMatrix = GL.getUniformLocation(SHADER_PROGRAM, "PMatrix");
+    const _VMatrix = GL.getUniformLocation(SHADER_PROGRAM, "VMatrix");
+    const _MMatrix = GL.getUniformLocation(SHADER_PROGRAM, "MMatrix");
+
     GL.enableVertexAttribArray(_position);
     GL.enableVertexAttribArray(_color);
     GL.useProgram(SHADER_PROGRAM);
 
-    const evolutionScene = createEvolutionScene(GL, SHADER_PROGRAM, _position, _color);
+    // === MATRICES ===
+    const PROJECTION_MATRIX = LIBS.get_projection(50, CANVAS.width / CANVAS.height, 1, 100);
+    const VIEW_MATRIX = LIBS.get_I4();
+    const MODEL_MATRIX = LIBS.get_I4();
+
+    // === BUILD SCENE ===
+    const evolutionScene = createEvolutionScene(
+        GL,
+        SHADER_PROGRAM,
+        _position,
+        _color,
+        _PMatrix,
+        _VMatrix,
+        _MMatrix
+    );
     evolutionScene.setup();
 
-    // Camera and view setup
-    var PROJMATRIX = LIBS.get_projection(40, CANVAS.width/CANVAS.height, 1, 100);
-    var VIEWMATRIX = LIBS.get_I4();
-    LIBS.translateZ(VIEWMATRIX, -20);
-
-    // Animation variables
-    var swingTime = 0;
-    var drag = false;
-    var x_prev, y_prev;
-    
-    // Mouse controls
-    CANVAS.addEventListener("mousedown", e => {
-        drag = true;
-        x_prev = e.clientX;
-        y_prev = e.clientY;
-    });
-
-    CANVAS.addEventListener("mouseup", () => drag = false);
-    CANVAS.addEventListener("mouseout", () => drag = false);
-
-    CANVAS.addEventListener("mousemove", e => {
-        if (drag) {
-            const dX = (e.clientX - x_prev) * 0.02;
-            const dY = (e.clientY - y_prev) * 0.02;
-            LIBS.rotateY(evolutionScene.MOVE_MATRIX, dX);
-            LIBS.rotateX(evolutionScene.MOVE_MATRIX, dY);
-            x_prev = e.clientX;
-            y_prev = e.clientY;
-        }
-    });
-
-    function animate(time) {
-        swingTime = time * 0.001;
-        
-        GL.clearColor(0.0, 0.0, 0.0, 1.0);
+    // === RENDER LOOP ===
+    function animate() {
+        mouseUp();
+        GL.viewport(0, 0, CANVAS.width, CANVAS.height);
         GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
-        GL.enable(GL.DEPTH_TEST);
-        GL.frontFace(GL.CCW);
-        GL.cullFace(GL.BACK);
 
-        evolutionScene.draw(time, PROJMATRIX, VIEWMATRIX);
+        LIBS.set_I4(VIEW_MATRIX);
+        LIBS.translateZ(VIEW_MATRIX, -zoomDistance);
+        LIBS.translateY(VIEW_MATRIX, -2);
+
+        LIBS.set_I4(MODEL_MATRIX);
+        LIBS.rotateY(MODEL_MATRIX, THETA);
+        LIBS.rotateX(MODEL_MATRIX, PHI);
+
+        GL.uniformMatrix4fv(_PMatrix, false, PROJECTION_MATRIX);
+        GL.uniformMatrix4fv(_VMatrix, false, VIEW_MATRIX);
+        GL.uniformMatrix4fv(_MMatrix, false, MODEL_MATRIX);
+
+        evolutionScene.draw(0, PROJECTION_MATRIX, VIEW_MATRIX);
+
+        GL.flush();
         requestAnimationFrame(animate);
     }
 
-    animate(0);
+    animate();
 }
 
 window.addEventListener("load", main);
