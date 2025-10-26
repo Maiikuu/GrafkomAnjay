@@ -3,7 +3,7 @@ import { MyObject } from "./MyObject.js";
 // Import scene creators from subfolders
 import { createInteleon } from "./inteleon/inteleon_scene.js";
 import { createDrizzile } from "./drizzile/drizzile_scene.js";
-import { createSobble } from "./sobble/sobble_scene.js";
+import { createSobble } from "./Sobble/sobble_scene.js";
 
 export function createEvolutionScene(GL, SHADER_PROGRAM, _position, _color, _PMatrix, _VMatrix, _MMatrix) {
   console.log("\n=== CREATING EVOLUTION SCENE ===");
