@@ -39,11 +39,14 @@ export class MyObject {
         LIBS.rotateZ(this.MOVE_MATRIX, this.rot[2]);
 
         this.MODEL_MATRIX = LIBS.multiply(this.MOVE_MATRIX, PARENT_MATRIX);
+        this.GL.useProgram(this.SHADER_PROGRAM);
+        
         this.GL.uniformMatrix4fv(_MMatrix, false, this.MODEL_MATRIX);
 
         this.GL.bindBuffer(this.GL.ARRAY_BUFFER, this.OBJECT_VERTEX);
-        this.GL.vertexAttribPointer(this._position, 3, this.GL.FLOAT, false, 24, 0);
-        this.GL.vertexAttribPointer(this._color, 3, this.GL.FLOAT, false, 24, 12);
+        const stride = 24; // 4 bytes * 6 floats (3 position + 3 color)
+        this.GL.vertexAttribPointer(this._position, 3, this.GL.FLOAT, false, stride, 0);
+        this.GL.vertexAttribPointer(this._color, 3, this.GL.FLOAT, false, stride, 12);
 
         this.GL.bindBuffer(this.GL.ELEMENT_ARRAY_BUFFER, this.OBJECT_FACES);
         this.GL.drawElements(this.GL.TRIANGLES, this.faces.length, this.GL.UNSIGNED_SHORT, 0);
