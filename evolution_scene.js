@@ -1,56 +1,151 @@
 import { MyObject } from "./MyObject.js";
-import { createInteleon } from "./UTS inteleon/inteleon_scene.js";
-import { createDrizzile } from "./UTS drizzile/drizzile_scene.js";
-import { createSobble } from "./Sobble/sobble_scene.js";
+
+// Import scene creators from subfolders
+import { createInteleon } from "./inteleon/inteleon_scene.js";
+import { createDrizzile } from "./drizzile/drizzile_scene.js";
+import { createSobble } from "./sobble/sobble_scene.js";
 
 export function createEvolutionScene(GL, SHADER_PROGRAM, _position, _color, _PMatrix, _VMatrix, _MMatrix) {
-    // === CREATE INDIVIDUAL SCENES ===
-    const inteleon = createInteleon(GL, SHADER_PROGRAM, _position, _color, _PMatrix, _VMatrix, _MMatrix);
-    const drizzileScene = createDrizzile(GL, SHADER_PROGRAM, _position, _color, _PMatrix, _VMatrix, _MMatrix);
-    const sobbleScene = createSobble(GL, SHADER_PROGRAM, _position, _color, _PMatrix, _VMatrix, _MMatrix);
+  console.log("\n=== CREATING EVOLUTION SCENE ===");
+  
+  // === CREATE INDIVIDUAL SCENES ===
+  console.log("Creating Sobble...");
+  const sobbleResult = createSobble(GL, SHADER_PROGRAM, _position, _color);
+  
+  console.log("Creating Drizzile...");
+  const drizzileResult = createDrizzile(GL, SHADER_PROGRAM, _position, _color);
+  
+  console.log("Creating Inteleon...");
+  const inteleonResult = createInteleon(GL, SHADER_PROGRAM, _position, _color);
 
-    // === WRAP DRIZZILE ROOT (so it behaves like MyObject) ===
-    const drizzile = drizzileScene.root;
+  // === WRAP SOBBLE ===
+  const sobbleWrapper = new MyObject(GL, SHADER_PROGRAM, _position, _color, _PMatrix, _VMatrix, _MMatrix);
+  sobbleWrapper.sobbleObj = sobbleResult;
+  
+  sobbleWrapper.render = function(_MMatrix, PARENT_MATRIX) {
+    if (this.sobbleObj && this.sobbleObj.render) {
+      this.sobbleObj.render(_MMatrix, PARENT_MATRIX);
+    }
+  };
+  
+  // === SOBBLE POSITIONING (Smallest - Left) ===
+  // Sobble is the baby form, so smallest
+  LIBS.translateX(sobbleWrapper.MOVE_MATRIX, -18.0);  // Far left
+  LIBS.translateY(sobbleWrapper.MOVE_MATRIX, -1.5);   // Slightly up
+  LIBS.scaleX(sobbleWrapper.MOVE_MATRIX, 1.0);        // Normal size (smallest)
+  LIBS.scaleY(sobbleWrapper.MOVE_MATRIX, 1.0);
+  LIBS.scaleZ(sobbleWrapper.MOVE_MATRIX, 1.0);
+  
+  console.log("✓ Sobble: Position X=-18, Y=-1.5, Scale=1.0");
 
-    // === WRAP SOBBLE (special setup/render style) ===
-    const sobble = new MyObject(GL, SHADER_PROGRAM, _position, _color);
-    sobble.setup = sobbleScene.setup;
-    sobble.draw = sobbleScene.render;
-    sobble.MOVE_MATRIX = LIBS.get_I4();
+  // === GET DRIZZILE ROOT ===
+  const drizzileRoot = drizzileResult.root || drizzileResult;
+  
+  // === DRIZZILE POSITIONING (Medium - Center) ===
+  // Drizzile is middle evolution, medium size
+  LIBS.translateX(drizzileRoot.MOVE_MATRIX, 0.0);     // Center
+  LIBS.translateY(drizzileRoot.MOVE_MATRIX, -2.5);    // Middle height
+  LIBS.scaleX(drizzileRoot.MOVE_MATRIX, 1.3);         // Slightly bigger than Sobble
+  LIBS.scaleY(drizzileRoot.MOVE_MATRIX, 1.3);
+  LIBS.scaleZ(drizzileRoot.MOVE_MATRIX, 1.3);
+  
+  console.log("✓ Drizzile: Position X=0, Y=-2.5, Scale=1.3");
 
-    // === POSITION EACH POKÉMON ===
-    LIBS.translateX(inteleon.MOVE_MATRIX, -4.0); // left side
-    LIBS.translateX(drizzile.MOVE_MATRIX, 0.0);  // center
-    LIBS.translateX(sobble.MOVE_MATRIX, 4.0);    // right side
+  // === GET INTELEON ROOT ===
+  const inteleonRoot = inteleonResult;
+  
+  // === INTELEON POSITIONING (Largest - Right) ===
+  // Inteleon is final evolution, tallest and most mature
+  LIBS.translateX(inteleonRoot.MOVE_MATRIX, 18.0);    // Far right
+  LIBS.translateY(inteleonRoot.MOVE_MATRIX, -3.5);    // Lower (taller model)
+  LIBS.scaleX(inteleonRoot.MOVE_MATRIX, 1.5);         // Largest
+  LIBS.scaleY(inteleonRoot.MOVE_MATRIX, 1.5);
+  LIBS.scaleZ(inteleonRoot.MOVE_MATRIX, 1.5);
+  
+  console.log("✓ Inteleon: Position X=18, Y=-3.5, Scale=1.5");
+  console.log("=== SCENE CREATION COMPLETE ===\n");
 
-    // === SCALE TO MATCH PROPORTIONS ===
-    ["X", "Y", "Z"].forEach(axis => LIBS[`scale${axis}`](sobble.MOVE_MATRIX, 1.2));
-    ["X", "Y", "Z"].forEach(axis => LIBS[`scale${axis}`](drizzile.MOVE_MATRIX, 1.0));
-    ["X", "Y", "Z"].forEach(axis => LIBS[`scale${axis}`](inteleon.MOVE_MATRIX, 0.8));
-
-    // === CREATE CONTAINER OBJECT ===
-    const evolutionGroup = new MyObject(GL, SHADER_PROGRAM, _position, _color);
-    evolutionGroup.childs.push(inteleon, drizzile, sobble);
-
-    // === SETUP FUNCTION ===
-    evolutionGroup.setup = function () {
-        if (inteleon.setup) inteleon.setup();
-        if (drizzile.setup) drizzile.setup();
-        if (drizzileScene.field) drizzileScene.field.setup();
-        if (drizzileScene.grass) drizzileScene.grass.setup();
-        if (drizzileScene.tree) drizzileScene.tree.setup();
-        if (sobble.setup) sobble.setup();
-    };
-
-    // === DRAW FUNCTION ===
-    evolutionGroup.draw = function (time, P, V) {
-        if (inteleon.draw) inteleon.draw(time, P, V);
-        if (drizzile.draw) drizzile.draw(time, P, V);
-        if (sobble.draw) sobble.draw(time, P, V);
-        if (drizzileScene.field) drizzileScene.field.draw(time, P, V);
-        if (drizzileScene.grass) drizzileScene.grass.draw(time, P, V);
-        if (drizzileScene.tree) drizzileScene.tree.draw(time, P, V);
-    };
-
-    return evolutionGroup;
+  // === RETURN COMBINED SCENE ===
+  return {
+    sobble: sobbleWrapper,
+    drizzile: drizzileRoot,
+    inteleon: inteleonRoot,
+    
+    setup: function() {
+      console.log("\n=== SETTING UP SCENE ===");
+      
+      try {
+        if (sobbleResult && sobbleResult.setup) {
+          sobbleResult.setup();
+          console.log("✓ Sobble setup complete");
+        }
+      } catch (e) {
+        console.error("✗ Sobble setup failed:", e);
+      }
+      
+      try {
+        if (drizzileRoot && drizzileRoot.setup) {
+          drizzileRoot.setup();
+          console.log("✓ Drizzile setup complete");
+        }
+      } catch (e) {
+        console.error("✗ Drizzile setup failed:", e);
+      }
+      
+      try {
+        if (inteleonRoot && inteleonRoot.setup) {
+          inteleonRoot.setup();
+          console.log("✓ Inteleon setup complete");
+        }
+      } catch (e) {
+        console.error("✗ Inteleon setup failed:", e);
+      }
+      
+      console.log("=== SETUP COMPLETE ===\n");
+    },
+    
+    render: function(time) {
+      const identityMatrix = LIBS.get_I4();
+      
+      // Render Sobble
+      try {
+        if (sobbleWrapper && sobbleWrapper.render) {
+          const sobbleMatrix = LIBS.multiply(sobbleWrapper.MOVE_MATRIX, identityMatrix);
+          sobbleWrapper.render(_MMatrix, sobbleMatrix);
+        }
+      } catch (e) {
+        if (Math.floor(time * 60) % 60 === 0) {
+          console.error("Sobble render error:", e);
+        }
+      }
+      
+      // Render Drizzile
+      try {
+        if (drizzileRoot && drizzileRoot.render) {
+          const drizzileMatrix = LIBS.multiply(drizzileRoot.MOVE_MATRIX, identityMatrix);
+          drizzileRoot.render(_MMatrix, drizzileMatrix);
+        }
+      } catch (e) {
+        if (Math.floor(time * 60) % 60 === 0) {
+          console.error("Drizzile render error:", e);
+        }
+      }
+      
+      // Render Inteleon
+      try {
+        if (inteleonRoot && inteleonRoot.render) {
+          const inteleonMatrix = LIBS.multiply(inteleonRoot.MOVE_MATRIX, identityMatrix);
+          inteleonRoot.render(_MMatrix, inteleonMatrix);
+        }
+      } catch (e) {
+        if (Math.floor(time * 60) % 60 === 0) {
+          console.error("Inteleon render error:", e);
+        }
+      }
+    },
+    
+    draw: function(time, P, V) {
+      this.render(time);
+    }
+  };
 }

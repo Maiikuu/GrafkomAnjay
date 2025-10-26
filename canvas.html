@@ -1,23 +1,94 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inteleon Preview</title>
-    <style>
-        canvas { 
-            width: 100vw; 
-            height: 100vh; 
-            display: block; 
-        }
-        body { 
-            margin: 0; 
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pokémon Evolution - Sobble → Drizzile → Inteleon</title>
+  
+  <!-- Prevent favicon 404 error -->
+  <link rel="icon" href="data:,">
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      overflow: hidden;
+      background: #1a1a2e;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    canvas {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+    }
+    
+    #info {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      color: white;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 15px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      line-height: 1.6;
+      z-index: 100;
+      backdrop-filter: blur(10px);
+    }
+    
+    #info h2 {
+      margin-bottom: 10px;
+      color: #4fc3f7;
+      font-size: 18px;
+    }
+    
+    #info p {
+      margin: 5px 0;
+    }
+    
+    #loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: white;
+      font-size: 24px;
+      background: rgba(0, 0, 0, 0.8);
+      padding: 30px 50px;
+      border-radius: 10px;
+      z-index: 200;
+    }
+    
+    .hidden {
+      display: none;
+    }
+  </style>
 </head>
 <body>
-    <canvas id="mycanvas"></canvas>
-    <script src="./UTS inteleon/libs.js"></script>
-    <script type="module" src="combination_main.js"></script>
+  <div id="loading">Loading Evolution Scene...</div>
+  
+  <canvas id="mycanvas"></canvas>
+  
+  <div id="info">
+    <h2>🌊 Pokémon Evolution Line</h2>
+    <p><strong>Left:</strong> Sobble (Water type)</p>
+    <p><strong>Center:</strong> Drizzile (Water type)</p>
+    <p><strong>Right:</strong> Inteleon (Water type)</p>
+    <hr style="margin: 10px 0; border: 0; border-top: 1px solid #555;">
+    <p><strong>Controls:</strong></p>
+    <p>🖱️ Mouse Drag - Rotate view</p>
+    <p>🖱️ Scroll Wheel - Zoom in/out</p>
+  </div>
+  
+  <!-- Load libs.js FIRST as regular script (NOT module) -->
+  <script src="./libs.js"></script>
+  
+  <!-- THEN load module main -->
+  <script type="module" src="./combination_main.js"></script>
 </body>
 </html>

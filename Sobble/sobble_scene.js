@@ -2,192 +2,318 @@ import { generateSphere, generateEllipsoid, generateBSplineTube } from "./main.j
 import { MyObject } from "./MyObject.js";
 
 export function createSobble(GL, SHADER_PROGRAM, _position, _color) {
-    // Warna Sobble - lebih gelap dengan kontras lebih baik
-    const SOBBLE_BLUE = [0.35, 0.65, 0.8];     
-    const SOBBLE_BLUE_DARK = [0.25, 0.55, 0.7]; 
-    const BELLY_LIGHT = [0.65, 0.8, 0.85];
-    const DARK_BLUE = [0.08, 0.15, 0.4];
-    const YELLOW_FIN = [0.85, 0.75, 0.0];
-    const PINK_MOUTH = [0.85, 0.45, 0.45];
-    const WHITE = [1.0, 1.0, 1.0];
+  // === COLORS ===
+  const SOBBLE_BLUE = [0.35, 0.65, 0.8];
+  const SOBBLE_BLUE_DARK = [0.25, 0.55, 0.7];
+  const BELLY_LIGHT = [0.65, 0.8, 0.85];
+  const DARK_BLUE = [0.08, 0.15, 0.4];
+  const YELLOW_FIN = [0.85, 0.75, 0.0];
+  const WHITE = [1.0, 1.0, 1.0];
 
-    const allParts = [];
+  // ========================================
+  // BODY - Small ellipsoid at origin
+  // ========================================
+  const bodyData = generateEllipsoid(1.5, 1.6, 1.2, 32, 16, SOBBLE_BLUE);
+  const Body = new MyObject(GL, SHADER_PROGRAM, _position, _color, bodyData);
+  LIBS.set_I4(Body.MOVE_MATRIX);
 
-    // === HEAD ===
-    const headData = generateEllipsoid(2.375, 2.185, 1.995, 32, 16, SOBBLE_BLUE);
-    const head = new MyObject(GL, SHADER_PROGRAM, _position, _color, headData);
-    head.pos = [0, 2.8, 0.5];
-    allParts.push(head);
+  // ========================================
+  // HEAD - Much larger, positioned FAR ABOVE body
+  // ========================================
+  const headData = generateEllipsoid(2.4, 2.2, 2.0, 32, 16, SOBBLE_BLUE);
+  const Head = new MyObject(GL, SHADER_PROGRAM, _position, _color, headData);
+  
+  // Head is 6 units above body center
+  LIBS.translateY(Head.MOVE_MATRIX, 6.0);
+  
+  Body.childs.push(Head);
 
-    // === FIN BORDER (DARK BLUE - FRONT/BATANG) ===
-    const finBorderData = generateEllipsoid(0.2, 3.8, 1.3, 24, 32, [0.0, 0.1, 0.35]); // Lebih lebar, tinggi, dan gelap
-    const finBorder = new MyObject(GL, SHADER_PROGRAM, _position, _color, finBorderData);
-    finBorder.pos = [0, 5.25, 0.35]; 
-    allParts.push(finBorder);
+  // ========================================
+  // FIN BORDER (Dark blue crest on head)
+  // ========================================
+  const finBorderData = generateEllipsoid(0.2, 3.8, 1.3, 24, 32, DARK_BLUE);
+  const FinBorder = new MyObject(GL, SHADER_PROGRAM, _position, _color, finBorderData);
+  
+  // On top of head
+  LIBS.translateY(FinBorder.MOVE_MATRIX, 3.5);
+  LIBS.translateZ(FinBorder.MOVE_MATRIX, -0.3);
+  
+  Head.childs.push(FinBorder);
 
-    // === FIN SAIL (YELLOW - BEHIND) ===
-    const finSailData = generateEllipsoid(0.15, 4.15, 1.8, 24, 32, YELLOW_FIN);
-    const finSail = new MyObject(GL, SHADER_PROGRAM, _position, _color, finSailData);
-    finSail.pos = [0, 5.625, -0.2]; 
-    allParts.push(finSail);
+  // ========================================
+  // FIN SAIL (Yellow part behind dark border)
+  // ========================================
+  const finSailData = generateEllipsoid(0.15, 4.2, 1.8, 24, 32, YELLOW_FIN);
+  const FinSail = new MyObject(GL, SHADER_PROGRAM, _position, _color, finSailData);
+  
+  LIBS.translateY(FinSail.MOVE_MATRIX, 3.8);
+  LIBS.translateZ(FinSail.MOVE_MATRIX, -1.0);
+  
+  Head.childs.push(FinSail);
 
+  // ========================================
+  // LEFT EYE (White part)
+  // ========================================
+  const leftEyeData = generateSphere(0.7, 32, 16, WHITE);
+  const LeftEye = new MyObject(GL, SHADER_PROGRAM, _position, _color, leftEyeData);
+  
+  // Position on left side of head, facing forward
+  LIBS.translateX(LeftEye.MOVE_MATRIX, -1.8);
+  LIBS.translateY(LeftEye.MOVE_MATRIX, 0.8);
+  LIBS.translateZ(LeftEye.MOVE_MATRIX, 1.5);
+  
+  Head.childs.push(LeftEye);
 
-    // === EYES LEFT (TANPA OUTLINE BESAR) ===
-    const eyeWhiteLeftData = generateSphere(0.7, 32, 16, WHITE);
-    const eyeWhiteLeft = new MyObject(GL, SHADER_PROGRAM, _position, _color, eyeWhiteLeftData);
-    eyeWhiteLeft.pos = [-1.2, 3.5, 1.2];
-    allParts.push(eyeWhiteLeft);
+  // === LEFT PUPIL (Dark blue)
+  const leftPupilData = generateSphere(0.4, 32, 16, DARK_BLUE);
+  const LeftPupil = new MyObject(GL, SHADER_PROGRAM, _position, _color, leftPupilData);
+  
+  LIBS.translateZ(LeftPupil.MOVE_MATRIX, 0.6);
+  
+  LeftEye.childs.push(LeftPupil);
 
-    // Pupil dengan outline tipis langsung di pupil
-    const pupilLeftData = generateSphere(0.4, 32, 16, DARK_BLUE);
-    const pupilLeft = new MyObject(GL, SHADER_PROGRAM, _position, _color, pupilLeftData);
-    pupilLeft.pos = [-1.2, 3.5, 1.8];
-    allParts.push(pupilLeft);
+  // === LEFT HIGHLIGHT (White shine)
+  const leftHighlightData = generateSphere(0.15, 16, 16, WHITE);
+  const LeftHighlight = new MyObject(GL, SHADER_PROGRAM, _position, _color, leftHighlightData);
+  
+  LIBS.translateX(LeftHighlight.MOVE_MATRIX, 0.15);
+  LIBS.translateY(LeftHighlight.MOVE_MATRIX, 0.2);
+  LIBS.translateZ(LeftHighlight.MOVE_MATRIX, 0.25);
+  
+  LeftPupil.childs.push(LeftHighlight);
 
-    const highlightLeftData = generateSphere(0.15, 16, 16, WHITE);
-    const highlightLeft = new MyObject(GL, SHADER_PROGRAM, _position, _color, highlightLeftData);
-    highlightLeft.pos = [-1.1, 3.65, 2.0];
-    allParts.push(highlightLeft);
+  // ========================================
+  // RIGHT EYE (Mirror of left)
+  // ========================================
+  const rightEyeData = generateSphere(0.7, 32, 16, WHITE);
+  const RightEye = new MyObject(GL, SHADER_PROGRAM, _position, _color, rightEyeData);
+  
+  LIBS.translateX(RightEye.MOVE_MATRIX, 1.8);
+  LIBS.translateY(RightEye.MOVE_MATRIX, 0.8);
+  LIBS.translateZ(RightEye.MOVE_MATRIX, 1.5);
+  
+  Head.childs.push(RightEye);
 
-    // === EYES RIGHT (TANPA OUTLINE BESAR) ===
-    const eyeWhiteRightData = generateSphere(0.7, 32, 16, WHITE);
-    const eyeWhiteRight = new MyObject(GL, SHADER_PROGRAM, _position, _color, eyeWhiteRightData);
-    eyeWhiteRight.pos = [1.2, 3.5, 1.2];
-    allParts.push(eyeWhiteRight);
+  // === RIGHT PUPIL
+  const rightPupilData = generateSphere(0.4, 32, 16, DARK_BLUE);
+  const RightPupil = new MyObject(GL, SHADER_PROGRAM, _position, _color, rightPupilData);
+  
+  LIBS.translateZ(RightPupil.MOVE_MATRIX, 0.6);
+  
+  RightEye.childs.push(RightPupil);
 
-    const pupilRightData = generateSphere(0.4, 32, 16, DARK_BLUE);
-    const pupilRight = new MyObject(GL, SHADER_PROGRAM, _position, _color, pupilRightData);
-    pupilRight.pos = [1.2, 3.5, 1.8];
-    allParts.push(pupilRight);
+  // === RIGHT HIGHLIGHT
+  const rightHighlightData = generateSphere(0.15, 16, 16, WHITE);
+  const RightHighlight = new MyObject(GL, SHADER_PROGRAM, _position, _color, rightHighlightData);
+  
+  LIBS.translateX(RightHighlight.MOVE_MATRIX, -0.15);
+  LIBS.translateY(RightHighlight.MOVE_MATRIX, 0.2);
+  LIBS.translateZ(RightHighlight.MOVE_MATRIX, 0.25);
+  
+  RightPupil.childs.push(RightHighlight);
 
-    const highlightRightData = generateSphere(0.15, 16, 16, WHITE);
-    const highlightRight = new MyObject(GL, SHADER_PROGRAM, _position, _color, highlightRightData);
-    highlightRight.pos = [1.3, 3.65, 2.0];
-    allParts.push(highlightRight);
+  // ========================================
+  // MOUTH (Horizontal ellipsoid)
+  // ========================================
+  const mouthData = generateEllipsoid(0.7, 0.5, 0.1, 32, 16, DARK_BLUE);
+  const Mouth = new MyObject(GL, SHADER_PROGRAM, _position, _color, mouthData);
+  
+  // Below eyes, forward on face
+  LIBS.translateY(Mouth.MOVE_MATRIX, -1.0);
+  LIBS.translateZ(Mouth.MOVE_MATRIX, 2.0);
+  
+  Head.childs.push(Mouth);
 
-    // === MOUTH ===
-    const mouthOutlineData = generateEllipsoid(0.72, 0.5, 0.08, 32, 16, DARK_BLUE);
-    const mouthOutline = new MyObject(GL, SHADER_PROGRAM, _position, _color, mouthOutlineData);
-    mouthOutline.pos = [0, 2.15, 2.19];
-    allParts.push(mouthOutline);
+  // ========================================
+  // LEFT BLUSH (Cheek mark)
+  // ========================================
+  const leftBlushData = generateEllipsoid(0.55, 0.35, 0.15, 32, 16, DARK_BLUE);
+  const LeftBlush = new MyObject(GL, SHADER_PROGRAM, _position, _color, leftBlushData);
+  
+  LIBS.translateX(LeftBlush.MOVE_MATRIX, -2.2);
+  LIBS.translateY(LeftBlush.MOVE_MATRIX, -0.3);
+  LIBS.translateZ(LeftBlush.MOVE_MATRIX, 1.2);
+  
+  Head.childs.push(LeftBlush);
 
-    // === BLUSH MARKS ===
-    const blushLeftData = generateEllipsoid(0.56, 0.36, 0.16, 32, 16, DARK_BLUE);
-    const blushLeft = new MyObject(GL, SHADER_PROGRAM, _position, _color, blushLeftData);
-    blushLeft.pos = [-1.7, 2.7, 1.4];
-    allParts.push(blushLeft);
+  // ========================================
+  // RIGHT BLUSH
+  // ========================================
+  const rightBlushData = generateEllipsoid(0.55, 0.35, 0.15, 32, 16, DARK_BLUE);
+  const RightBlush = new MyObject(GL, SHADER_PROGRAM, _position, _color, rightBlushData);
+  
+  LIBS.translateX(RightBlush.MOVE_MATRIX, 2.2);
+  LIBS.translateY(RightBlush.MOVE_MATRIX, -0.3);
+  LIBS.translateZ(RightBlush.MOVE_MATRIX, 1.2);
+  
+  Head.childs.push(RightBlush);
 
-    const blushRightData = generateEllipsoid(0.56, 0.36, 0.16, 32, 16, DARK_BLUE);
-    const blushRight = new MyObject(GL, SHADER_PROGRAM, _position, _color, blushRightData);
-    blushRight.pos = [1.7, 2.7, 1.4];
-    allParts.push(blushRight);
+  // ========================================
+  // BELLY (Light blue on front of body)
+  // ========================================
+  const bellyData = generateEllipsoid(1.0, 1.3, 0.7, 32, 16, BELLY_LIGHT);
+  const Belly = new MyObject(GL, SHADER_PROGRAM, _position, _color, bellyData);
+  
+  // Forward on body
+  LIBS.translateY(Belly.MOVE_MATRIX, 0.5);
+  LIBS.translateZ(Belly.MOVE_MATRIX, 1.5);
+  
+  Body.childs.push(Belly);
 
-    // === BODY ===
-    const bodyData = generateEllipsoid(1.495, 1.625, 1.235, 32, 16, SOBBLE_BLUE);
-    const body = new MyObject(GL, SHADER_PROGRAM, _position, _color, bodyData);
-    body.pos = [0, 0.9, -0.7];
-    allParts.push(body);
+  // ========================================
+  // TAIL (Curly spiral behind body)
+  // ========================================
+  const tailPoints = [];
+  for (let i = 0; i < 50; i++) {
+    const t = i / 50;
+    const angle = t * Math.PI * 4.5 + Math.PI;
+    const radius = 1.5 * (0.12 + 0.88 * (1 - t));
+    tailPoints.push([
+      0,
+      1.6 + Math.sin(angle) * radius,
+      -3.0 - Math.cos(angle) * radius
+    ]);
+  }
 
-    // === BELLY ===
-    const bellyData = generateEllipsoid(1.0, 1.3, 0.75, 32, 16, BELLY_LIGHT);
-    const belly = new MyObject(GL, SHADER_PROGRAM, _position, _color, bellyData);
-    belly.pos = [0, 0.9, 0.4];
-    allParts.push(belly);
+  const tailData = generateBSplineTube(tailPoints.slice(0, -4), 0.5, 16, 30, SOBBLE_BLUE);
+  const Tail = new MyObject(GL, SHADER_PROGRAM, _position, _color, tailData);
+  
+  // Starts from body back
+  LIBS.translateY(Tail.MOVE_MATRIX, -1.0);
+  LIBS.translateZ(Tail.MOVE_MATRIX, 2.0);
+  
+  Body.childs.push(Tail);
 
-    // === SPIRAL TAIL
-    const tailCtrlPoints = [];
-    const spiralSegments = 50; 
-    const centerX = 0, centerY = 1.6, centerZ = -3;
-    
-    for (let i = 0; i < spiralSegments; i++) {
-        const t = i / spiralSegments;
-        const angle = t * Math.PI * 4.5 + Math.PI;
-        const maxRadius = 1.5;
-        const minRadiusRatio = 0.12;
-        const radius = maxRadius * (minRadiusRatio + (1 - minRadiusRatio) * (1 - t));
-        const x = centerX;
-        const y = centerY + Math.sin(angle) * radius;
-        const z = centerZ - Math.cos(angle) * radius;
-        tailCtrlPoints.push([x, y, z]);
-    }
+  // === TAIL MID (Darker section)
+  const tailMidData = generateBSplineTube(tailPoints.slice(-8, -2), 0.45, 16, 30, SOBBLE_BLUE_DARK);
+  const TailMid = new MyObject(GL, SHADER_PROGRAM, _position, _color, tailMidData);
+  
+  LIBS.translateY(TailMid.MOVE_MATRIX, -1.0);
+  LIBS.translateZ(TailMid.MOVE_MATRIX, 2.0);
+  
+  Body.childs.push(TailMid);
 
-    // Tail main
-    const tailMainPoints = tailCtrlPoints.slice(0, -4);
-    const tailData = generateBSplineTube(tailMainPoints, 0.52, 16, 30, SOBBLE_BLUE);
-    const tail = new MyObject(GL, SHADER_PROGRAM, _position, _color, tailData);
-    tail.pos = [0, 0, 0];
-    allParts.push(tail);
+  // === TAIL TIP (Darkest section)
+  const tailTipData = generateBSplineTube(tailPoints.slice(-5), 0.38, 16, 30, DARK_BLUE);
+  const TailTip = new MyObject(GL, SHADER_PROGRAM, _position, _color, tailTipData);
+  
+  LIBS.translateY(TailTip.MOVE_MATRIX, -1.0);
+  LIBS.translateZ(TailTip.MOVE_MATRIX, 2.0);
+  
+  Body.childs.push(TailTip);
 
-    // Tail middle
-    const tailMidPoints = tailCtrlPoints.slice(-8, -2);
-    const tailMidData = generateBSplineTube(tailMidPoints, 0.45, 16, 30, SOBBLE_BLUE_DARK);
-    const tailMid = new MyObject(GL, SHADER_PROGRAM, _position, _color, tailMidData);
-    tailMid.pos = [0, 0, 0];
-    allParts.push(tailMid);
+  // ========================================
+  // FRONT LEFT ARM
+  // ========================================
+  const frontLeftArmData = generateEllipsoid(0.22, 0.6, 0.22, 16, 16, SOBBLE_BLUE);
+  const FrontLeftArm = new MyObject(GL, SHADER_PROGRAM, _position, _color, frontLeftArmData);
+  
+  // On left side of body, slightly forward
+  LIBS.translateX(FrontLeftArm.MOVE_MATRIX, -2.0);
+  LIBS.translateY(FrontLeftArm.MOVE_MATRIX, 1.5);
+  LIBS.translateZ(FrontLeftArm.MOVE_MATRIX, 1.0);
+  
+  Body.childs.push(FrontLeftArm);
 
-    // Tail tip
-    const tailTipCtrlPoints = tailCtrlPoints.slice(-5);
-    const tailTipData = generateBSplineTube(tailTipCtrlPoints, 0.38, 16, 30, DARK_BLUE);
-    const tailTip = new MyObject(GL, SHADER_PROGRAM, _position, _color, tailTipData);
-    tailTip.pos = [0, 0, 0];
-    allParts.push(tailTip);
+  // === LEFT HAND
+  const leftHandData = generateEllipsoid(0.36, 0.15, 0.3, 16, 16, SOBBLE_BLUE);
+  const LeftHand = new MyObject(GL, SHADER_PROGRAM, _position, _color, leftHandData);
+  
+  LIBS.translateX(LeftHand.MOVE_MATRIX, -0.6);
+  LIBS.translateY(LeftHand.MOVE_MATRIX, -0.8);
+  LIBS.translateZ(LeftHand.MOVE_MATRIX, 0.3);
+  
+  FrontLeftArm.childs.push(LeftHand);
 
-    // === FRONT LEGS ===
-    const frontLegLeftData = generateEllipsoid(0.22, 0.6, 0.22, 16, 16, SOBBLE_BLUE);
-    const frontLegLeft = new MyObject(GL, SHADER_PROGRAM, _position, _color, frontLegLeftData);
-    frontLegLeft.pos = [-1.2, 0.3, 0.5];
-    allParts.push(frontLegLeft);
+  // ========================================
+  // FRONT RIGHT ARM
+  // ========================================
+  const frontRightArmData = generateEllipsoid(0.22, 0.6, 0.22, 16, 16, SOBBLE_BLUE);
+  const FrontRightArm = new MyObject(GL, SHADER_PROGRAM, _position, _color, frontRightArmData);
+  
+  LIBS.translateX(FrontRightArm.MOVE_MATRIX, 2.0);
+  LIBS.translateY(FrontRightArm.MOVE_MATRIX, 1.5);
+  LIBS.translateZ(FrontRightArm.MOVE_MATRIX, 1.0);
+  
+  Body.childs.push(FrontRightArm);
 
-    const handLeftData = generateEllipsoid(0.36, 0.15, 0.3, 16, 16, SOBBLE_BLUE);
-    const handLeft = new MyObject(GL, SHADER_PROGRAM, _position, _color, handLeftData);
-    handLeft.pos = [-1.65, -0.35, 0.85];
-    allParts.push(handLeft);
+  // === RIGHT HAND
+  const rightHandData = generateEllipsoid(0.36, 0.15, 0.3, 16, 16, SOBBLE_BLUE);
+  const RightHand = new MyObject(GL, SHADER_PROGRAM, _position, _color, rightHandData);
+  
+  LIBS.translateX(RightHand.MOVE_MATRIX, 0.6);
+  LIBS.translateY(RightHand.MOVE_MATRIX, -0.8);
+  LIBS.translateZ(RightHand.MOVE_MATRIX, 0.3);
+  
+  FrontRightArm.childs.push(RightHand);
 
-    const frontLegRightData = generateEllipsoid(0.22, 0.6, 0.22, 16, 16, SOBBLE_BLUE);
-    const frontLegRight = new MyObject(GL, SHADER_PROGRAM, _position, _color, frontLegRightData);
-    frontLegRight.pos = [1.2, 0.3, 0.5];
-    allParts.push(frontLegRight);
+  // ========================================
+  // BACK LEFT LEG
+  // ========================================
+  const backLeftLegData = generateEllipsoid(0.32, 0.5, 0.32, 16, 16, SOBBLE_BLUE);
+  const BackLeftLeg = new MyObject(GL, SHADER_PROGRAM, _position, _color, backLeftLegData);
+  
+  // Behind and to the left of body
+  LIBS.translateX(BackLeftLeg.MOVE_MATRIX, -1.5);
+  LIBS.translateY(BackLeftLeg.MOVE_MATRIX, -0.5);
+  LIBS.translateZ(BackLeftLeg.MOVE_MATRIX, -2.0);
+  
+  Body.childs.push(BackLeftLeg);
 
-    const handRightData = generateEllipsoid(0.36, 0.15, 0.3, 16, 16, SOBBLE_BLUE);
-    const handRight = new MyObject(GL, SHADER_PROGRAM, _position, _color, handRightData);
-    handRight.pos = [1.65, -0.35, 0.85];
-    allParts.push(handRight);
+  // === LEFT CALF
+  const leftCalfData = generateEllipsoid(0.32, 0.75, 0.28, 16, 16, SOBBLE_BLUE);
+  const LeftCalf = new MyObject(GL, SHADER_PROGRAM, _position, _color, leftCalfData);
+  
+  LIBS.translateX(LeftCalf.MOVE_MATRIX, -0.9);
+  LIBS.translateY(LeftCalf.MOVE_MATRIX, -0.7);
+  LIBS.translateZ(LeftCalf.MOVE_MATRIX, -0.3);
+  
+  BackLeftLeg.childs.push(LeftCalf);
 
-    // === BACK LEGS ===
-    const backLegLeftData = generateEllipsoid(0.32, 0.5, 0.32, 16, 16, SOBBLE_BLUE);
-    const backLegLeft = new MyObject(GL, SHADER_PROGRAM, _position, _color, backLegLeftData);
-    backLegLeft.pos = [-1.3, 0.2, -1.1];
-    allParts.push(backLegLeft);
+  // === LEFT FOOT
+  const leftFootData = generateEllipsoid(0.6, 0.2, 0.44, 16, 16, SOBBLE_BLUE);
+  const LeftFoot = new MyObject(GL, SHADER_PROGRAM, _position, _color, leftFootData);
+  
+  LIBS.translateX(LeftFoot.MOVE_MATRIX, -0.6);
+  LIBS.translateY(LeftFoot.MOVE_MATRIX, -0.8);
+  LIBS.translateZ(LeftFoot.MOVE_MATRIX, 0.3);
+  
+  LeftCalf.childs.push(LeftFoot);
 
-    const calfLeftData = generateEllipsoid(0.32, 0.75, 0.28, 16, 16, SOBBLE_BLUE);
-    const calfLeft = new MyObject(GL, SHADER_PROGRAM, _position, _color, calfLeftData);
-    calfLeft.pos = [-2.1, -0.35, -1.1];
-    allParts.push(calfLeft);
+  // ========================================
+  // BACK RIGHT LEG
+  // ========================================
+  const backRightLegData = generateEllipsoid(0.32, 0.5, 0.32, 16, 16, SOBBLE_BLUE);
+  const BackRightLeg = new MyObject(GL, SHADER_PROGRAM, _position, _color, backRightLegData);
+  
+  LIBS.translateX(BackRightLeg.MOVE_MATRIX, 1.5);
+  LIBS.translateY(BackRightLeg.MOVE_MATRIX, -0.5);
+  LIBS.translateZ(BackRightLeg.MOVE_MATRIX, -2.0);
+  
+  Body.childs.push(BackRightLeg);
 
-    const footLeftData = generateEllipsoid(0.6, 0.2, 0.44, 16, 16, SOBBLE_BLUE);
-    const footLeft = new MyObject(GL, SHADER_PROGRAM, _position, _color, footLeftData);
-    footLeft.pos = [-2.7, -1.0, -1.1];
-    allParts.push(footLeft);
+  // === RIGHT CALF
+  const rightCalfData = generateEllipsoid(0.32, 0.75, 0.28, 16, 16, SOBBLE_BLUE);
+  const RightCalf = new MyObject(GL, SHADER_PROGRAM, _position, _color, rightCalfData);
+  
+  LIBS.translateX(RightCalf.MOVE_MATRIX, 0.9);
+  LIBS.translateY(RightCalf.MOVE_MATRIX, -0.7);
+  LIBS.translateZ(RightCalf.MOVE_MATRIX, -0.3);
+  
+  BackRightLeg.childs.push(RightCalf);
 
-    const backLegRightData = generateEllipsoid(0.32, 0.5, 0.32, 16, 16, SOBBLE_BLUE);
-    const backLegRight = new MyObject(GL, SHADER_PROGRAM, _position, _color, backLegRightData);
-    backLegRight.pos = [1.3, 0.2, -1.1];
-    allParts.push(backLegRight);
+  // === RIGHT FOOT
+  const rightFootData = generateEllipsoid(0.6, 0.2, 0.44, 16, 16, SOBBLE_BLUE);
+  const RightFoot = new MyObject(GL, SHADER_PROGRAM, _position, _color, rightFootData);
+  
+  LIBS.translateX(RightFoot.MOVE_MATRIX, 0.6);
+  LIBS.translateY(RightFoot.MOVE_MATRIX, -0.8);
+  LIBS.translateZ(RightFoot.MOVE_MATRIX, 0.3);
+  
+  RightCalf.childs.push(RightFoot);
 
-    const calfRightData = generateEllipsoid(0.32, 0.75, 0.28, 16, 16, SOBBLE_BLUE);
-    const calfRight = new MyObject(GL, SHADER_PROGRAM, _position, _color, calfRightData);
-    calfRight.pos = [2.1, -0.35, -1.1];
-    allParts.push(calfRight);
-
-    const footRightData = generateEllipsoid(0.6, 0.2, 0.44, 16, 16, SOBBLE_BLUE);
-    const footRight = new MyObject(GL, SHADER_PROGRAM, _position, _color, footRightData);
-    footRight.pos = [2.7, -1.0, -1.1];
-    allParts.push(footRight);
-
-    return {
-        setup: () => allParts.forEach(part => part.setup()),
-        render: (_Mmatrix, parentMat) => {
-            allParts.forEach(part => part.render(_Mmatrix, parentMat));
-        }
-    };
+  console.log("✅ Sobble created - Hierarchical structure with proper spacing");
+  console.log("   Body parts:", Body.childs.length);
+  
+  return Body;
 }
