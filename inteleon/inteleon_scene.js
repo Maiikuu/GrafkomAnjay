@@ -22,6 +22,7 @@ export function createInteleon(GL, SHADER_PROGRAM, _position, _color) {
     LIBS.set_I4(Body.MOVE_MATRIX);
     LIBS.scaleY(Body.MOVE_MATRIX, 1.4); // make it taller
     LIBS.translateY(Body.MOVE_MATRIX, -3.0); // lower to sit under neck
+    LIBS.translateZ(Body.MOVE_MATRIX, -5.5); // move forward slightly
 
     // === NECK ===
     const { vertices: hypVerts, faces: hypFaces } = createHyperboloid1Sheet(
@@ -123,16 +124,16 @@ export function createInteleon(GL, SHADER_PROGRAM, _position, _color) {
     const BackFin = new MyObject(GL, SHADER_PROGRAM, _position, _color, backFinVerts, backFinFaces);
     const BackFin2 = new MyObject(GL, SHADER_PROGRAM, _position, _color, backFinVerts, backFinFaces);
     LIBS.set_I4(BackFin.MOVE_MATRIX);
-    LIBS.translateY(BackFin.MOVE_MATRIX, 1.8);
-    LIBS.translateZ(BackFin.MOVE_MATRIX, -0.6);
-    LIBS.rotateX(BackFin.MOVE_MATRIX, 1.62);
+    LIBS.translateY(BackFin.MOVE_MATRIX, 1.9);
+    LIBS.translateZ(BackFin.MOVE_MATRIX, -0.8);
+    LIBS.rotateX(BackFin.MOVE_MATRIX, 1.8);
     LIBS.rotateY(BackFin.MOVE_MATRIX, Math.PI);
-    LIBS.scaleZ(BackFin.MOVE_MATRIX, 3.5);
-    LIBS.scaleY(BackFin.MOVE_MATRIX, 6.8);
+    LIBS.scaleZ(BackFin.MOVE_MATRIX, 1.5);
+    LIBS.scaleY(BackFin.MOVE_MATRIX, 1.2);
 
     // ARM — left and right
     const { vertices: armVerts, faces: armFaces } = createCylinder(
-        0.18, 2.4, 32,
+        0.18, 2.6, 32,
         [0.0, 0.8, 0.8]  // cyan color
     );
     const LeftArm = new MyObject(GL, SHADER_PROGRAM, _position, _color, armVerts, armFaces);
@@ -143,7 +144,7 @@ export function createInteleon(GL, SHADER_PROGRAM, _position, _color) {
     LIBS.translateY(LeftArm.MOVE_MATRIX, 1 / -3.0);
     LIBS.rotateZ(LeftArm.MOVE_MATRIX, Math.PI / 2);   // Rotate to point outward
     LIBS.translateY(LeftArm.MOVE_MATRIX, 1.6);       // Position slightly down
-    LIBS.translateX(LeftArm.MOVE_MATRIX, -1.2);       // Move left
+    LIBS.translateX(LeftArm.MOVE_MATRIX, -1.0);       // Move left
     LIBS.scaleY(LeftArm.MOVE_MATRIX, 0.6);            // Adjust arm length
 
     // Right Arm transform
@@ -152,7 +153,7 @@ export function createInteleon(GL, SHADER_PROGRAM, _position, _color) {
     LIBS.translateY(RightArm.MOVE_MATRIX, 1 / -3.0);
     LIBS.rotateZ(RightArm.MOVE_MATRIX, -Math.PI / 2);
     LIBS.translateY(RightArm.MOVE_MATRIX, 1.6);
-    LIBS.translateX(RightArm.MOVE_MATRIX, 1.2);
+    LIBS.translateX(RightArm.MOVE_MATRIX, 1.0);
     LIBS.scaleY(RightArm.MOVE_MATRIX, 0.6);
 
     // create hands
