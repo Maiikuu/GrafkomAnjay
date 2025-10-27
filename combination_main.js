@@ -3,7 +3,7 @@ import { createEvolutionScene } from "./evolution_scene.js";
 function main() {
   console.log("=== POKEMON EVOLUTION VIEWER ===");
   console.log("Initializing application...\n");
-  
+
   // === CANVAS SETUP ===
   const CANVAS = document.getElementById("mycanvas");
   if (!CANVAS) {
@@ -11,46 +11,82 @@ function main() {
     alert("Canvas element not found!");
     return;
   }
-  
+
   CANVAS.width = window.innerWidth;
   CANVAS.height = window.innerHeight;
   console.log(`Canvas size: ${CANVAS.width}x${CANVAS.height}`);
 
   // === MOUSE CONTROLS ===
-  let drag = false, x_prev = 0, y_prev = 0;
-  let dX = 0, dY = 0;
-  let THETA = 0, PHI = 0;
+  let drag = false,
+    x_prev = 0,
+    y_prev = 0;
+  let panDrag = false;
+  let dX = 0,
+    dY = 0;
+  let THETA = 0,
+    PHI = 0;
+  let panX = 0,
+    panY = 0;
   let zoomDistance = 45;
   const FRICTION = 0.15;
+  const PAN_SPEED = 0.05;
 
-  CANVAS.addEventListener("mousedown", e => {
-    drag = true;
+  CANVAS.addEventListener("contextmenu", (e) => e.preventDefault());
+
+  CANVAS.addEventListener("mousedown", (e) => {
+    e.preventDefault();
+    if (e.button === 0) {
+      // Tombol kiri untuk rotasi (ORBIT)
+      drag = true;
+    } else if (e.button === 2) {
+      // Tombol kanan untuk panning (GESER)
+      panDrag = true;
+    }
     x_prev = e.pageX;
     y_prev = e.pageY;
   });
 
-  CANVAS.addEventListener("mouseup", () => drag = false);
-  CANVAS.addEventListener("mouseout", () => drag = false);
+  CANVAS.addEventListener("mouseup", (e) => {
+    if (e.button === 0) drag = false;
+    if (e.button === 2) panDrag = false;
+  });
 
-  CANVAS.addEventListener("mousemove", e => {
-    if (!drag) return;
-    dX = (e.pageX - x_prev) * 2 * Math.PI / CANVAS.width;
-    dY = (e.pageY - y_prev) * 2 * Math.PI / CANVAS.height;
-    THETA += dX;
-    PHI += dY;
+  CANVAS.addEventListener("mouseout", () => {
+    drag = false;
+    panDrag = false;
+  });
+
+  CANVAS.addEventListener("mousemove", (e) => {
+    if (!drag && !panDrag) return;
+
+    const deltaX = e.pageX - x_prev;
+    const deltaY = e.pageY - y_prev;
+
+    if (drag) {
+      // Mode Rotasi / Orbit (klik kiri)
+      dX = (deltaX * 2 * Math.PI) / CANVAS.width;
+      dY = (deltaY * 2 * Math.PI) / CANVAS.height;
+      THETA += dX;
+      PHI += dY;
+    } else if (panDrag) {
+      // Mode Panning / Geser (klik kanan)
+      panX += deltaX * PAN_SPEED;
+      panY -= deltaY * PAN_SPEED;
+    }
+
     x_prev = e.pageX;
     y_prev = e.pageY;
   });
 
-  CANVAS.addEventListener("wheel", e => {
+  CANVAS.addEventListener("wheel", (e) => {
     e.preventDefault();
     zoomDistance += e.deltaY * 0.02;
     zoomDistance = Math.max(25, Math.min(90, zoomDistance));
   });
 
   function applyFriction() {
-    dX *= (1 - FRICTION);
-    dY *= (1 - FRICTION);
+    dX *= 1 - FRICTION;
+    dY *= 1 - FRICTION;
     THETA += dX;
     PHI += dY;
   }
@@ -72,7 +108,7 @@ function main() {
 
   // === SHADERS ===
   console.log("Compiling shaders...");
-  
+
   const shader_vertex_source = `
     attribute vec3 position;
     attribute vec3 color;
@@ -104,8 +140,16 @@ function main() {
     return shader;
   }
 
-  const shader_vertex = get_shader(shader_vertex_source, GL.VERTEX_SHADER, "Vertex");
-  const shader_fragment = get_shader(shader_fragment_source, GL.FRAGMENT_SHADER, "Fragment");
+  const shader_vertex = get_shader(
+    shader_vertex_source,
+    GL.VERTEX_SHADER,
+    "Vertex"
+  );
+  const shader_fragment = get_shader(
+    shader_fragment_source,
+    GL.FRAGMENT_SHADER,
+    "Fragment"
+  );
 
   if (!shader_vertex || !shader_fragment) {
     console.error("Shader compilation failed!");
@@ -137,7 +181,7 @@ function main() {
     color: _color,
     PMatrix: _PMatrix ? "OK" : "NULL",
     VMatrix: _VMatrix ? "OK" : "NULL",
-    MMatrix: _MMatrix ? "OK" : "NULL"
+    MMatrix: _MMatrix ? "OK" : "NULL",
   });
   console.log("");
 
@@ -146,7 +190,12 @@ function main() {
   GL.useProgram(SHADER_PROGRAM);
 
   // === MATRICES ===
-  const PROJECTION_MATRIX = LIBS.get_projection(50, CANVAS.width / CANVAS.height, 1, 100);
+  const PROJECTION_MATRIX = LIBS.get_projection(
+    50,
+    CANVAS.width / CANVAS.height,
+    1,
+    100
+  );
   const VIEW_MATRIX = LIBS.get_I4();
   const MODEL_MATRIX = LIBS.get_I4();
 
@@ -187,34 +236,49 @@ function main() {
   console.log("Starting render loop...\n");
   let time = 0;
   let frameCount = 0;
-  
+
   function animate() {
     time += 0.016;
     frameCount++;
-    
+
     // Log FPS every 60 frames
     if (frameCount % 60 === 0) {
-      console.log(`Frame: ${frameCount}, Time: ${time.toFixed(2)}s, Zoom: ${zoomDistance.toFixed(1)}, Theta: ${THETA.toFixed(2)}, Phi: ${PHI.toFixed(2)}`);
+      console.log(
+        `Frame: ${frameCount}, Time: ${time.toFixed(
+          2
+        )}s, Zoom: ${zoomDistance.toFixed(1)}, Theta: ${THETA.toFixed(
+          2
+        )}, Phi: ${PHI.toFixed(2)}`
+      );
     }
-    
+
     applyFriction();
 
     GL.viewport(0, 0, CANVAS.width, CANVAS.height);
     GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
 
-    // Update view matrix
+    // === Update view matrix (KAMERA) ===
+    // Kita terapkan semua transformasi kamera di sini
     LIBS.set_I4(VIEW_MATRIX);
-    LIBS.translateZ(VIEW_MATRIX, -zoomDistance);
-    LIBS.translateY(VIEW_MATRIX, -3);
 
-    // Update model matrix
+    // 1. Terapkan Pan/Geser (menggeser pusat orbit)
+    LIBS.translateX(VIEW_MATRIX, panX);
+    LIBS.translateY(VIEW_MATRIX, -3 + panY); // Geser Y + offset awal
+
+    // 2. Terapkan Orbit/Rotasi (klik kiri)
+    LIBS.rotateY(VIEW_MATRIX, THETA); // Rotasi Yaw (kiri/kanan)
+    LIBS.rotateX(VIEW_MATRIX, PHI); // Rotasi Pitch (atas/bawah)
+
+    // 3. Terapkan Zoom (jarak dari pusat)
+    LIBS.translateZ(VIEW_MATRIX, -zoomDistance);
+
+    // === Update model matrix (OBJEK) ===
     LIBS.set_I4(MODEL_MATRIX);
-    LIBS.rotateY(MODEL_MATRIX, THETA);
-    LIBS.rotateX(MODEL_MATRIX, PHI);
 
     // Set uniforms
     GL.uniformMatrix4fv(_PMatrix, false, PROJECTION_MATRIX);
     GL.uniformMatrix4fv(_VMatrix, false, VIEW_MATRIX);
+
     GL.uniformMatrix4fv(_MMatrix, false, MODEL_MATRIX);
 
     // Render scene
