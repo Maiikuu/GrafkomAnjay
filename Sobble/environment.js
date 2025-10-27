@@ -26,7 +26,7 @@ export function createEnvironment(GL, SHADER_PROGRAM, _position, _color) {
   allParts.push(ground);
 
   // === DIRT PATCHES - Tanah coklat ===
-  const dirtPatch1Data = generateEllipsoid(2.5, 0.15, 2, 24, 8, DIRT_BROWN);
+  const dirtPatch1Data = generateEllipsoid(4, 0.15, 2, 24, 8, DIRT_BROWN);
   const dirtPatch1 = new MyObject(
     GL,
     SHADER_PROGRAM,
@@ -49,9 +49,9 @@ export function createEnvironment(GL, SHADER_PROGRAM, _position, _color) {
   allParts.push(dirtPatch2);
 
   // === SMALL POND - Kolam kecil ===
-  const pondData = generateEllipsoid(3.5, 0.2, 3, 32, 8, WATER_BLUE);
+  const pondData = generateEllipsoid(11.5, 0.2, 8, 32, 8, WATER_BLUE);
   const pond = new MyObject(GL, SHADER_PROGRAM, _position, _color, pondData);
-  pond.pos = [-4, -1.55, 6];
+  pond.pos = [-9, -1.55, 14];
   allParts.push(pond);
 
   // === ROCKS - Batu-batu besar ===
