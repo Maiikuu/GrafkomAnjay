@@ -133,7 +133,7 @@ export function createInteleon(GL, SHADER_PROGRAM, _position, _color) {
 
     // ARM — left and right
     const { vertices: armVerts, faces: armFaces } = createCylinder(
-        0.18, 2.6, 32,
+        0.18, 10.6, 32,
         [0.0, 0.8, 0.8]  // cyan color
     );
     const LeftArm = new MyObject(GL, SHADER_PROGRAM, _position, _color, armVerts, armFaces);
@@ -160,7 +160,7 @@ export function createInteleon(GL, SHADER_PROGRAM, _position, _color) {
     const { vertices: handVerts, faces: handFaces } = createHand(
         0.6, 0.08, 8,   
         4,              
-        0.34, 0.06, 0.12, 10, 8,
+        2.8, 0.06, 0.12, 10, 8,
         [0.0, 0.0, 0.0]  // black color
     );
     const LeftHand = new MyObject(GL, SHADER_PROGRAM, _position, _color, handVerts, handFaces);
@@ -168,14 +168,14 @@ export function createInteleon(GL, SHADER_PROGRAM, _position, _color) {
 
     // position left hand at end of left arm (tweak values)
     LIBS.set_I4(LeftHand.MOVE_MATRIX);
-    LIBS.translateY(LeftHand.MOVE_MATRIX, 1.2);   // adjust as needed
+    LIBS.translateY(LeftHand.MOVE_MATRIX, 5.7);   // adjust as needed
     LIBS.translateX(LeftHand.MOVE_MATRIX, 0);
     // LIBS.translateZ(LeftHand.MOVE_MATRIX, 0.2);
     // LIBS.rotateZ(LeftHand.MOVE_MATRIX, Math.PI / 2);
 
     // right hand (mirror)
     LIBS.set_I4(RightHand.MOVE_MATRIX);
-    LIBS.translateY(RightHand.MOVE_MATRIX, 1.2);
+    LIBS.translateY(RightHand.MOVE_MATRIX, 5.7);
     LIBS.translateX(RightHand.MOVE_MATRIX, 0);
     // LIBS.translateZ(RightHand.MOVE_MATRIX, 0.2);
     // LIBS.rotateZ(RightHand.MOVE_MATRIX, -Math.PI / 2);

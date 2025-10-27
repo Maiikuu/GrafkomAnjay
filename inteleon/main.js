@@ -666,11 +666,11 @@ export function createHand(
 
     for (let i = 0; i < fingerCount; i++) {
         const fx = startX + i * spacing;
-        const f = createFinger(fingerLength, fingerRadius, fingerRadius * 0.6, fingerCurve, fingerRadialSeg, fingerLenSeg, fingerColor);
+        const f = createFinger(fingerLength, fingerRadius, fingerRadius * 0.1, fingerCurve, fingerRadialSeg, fingerLenSeg, fingerColor);
         // translate finger vertices so base sits at front-top of palm
         // palm is centered at origin; front Z is +palmSize/2
         const translateY = palmSize / 2 - 0.05; // slightly inset into palm top
-        const translateZ = palmSize / 2 + 0.01; // sit in front of palm
+        const translateZ = palmSize / 5 + 0.001; // sit in front of palm
         // apply translation per-vertex
         for (let vi = 0; vi < f.vertices.length; vi += 6) {
             f.vertices[vi + 0] += fx;            // x
