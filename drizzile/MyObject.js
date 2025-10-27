@@ -74,7 +74,6 @@ export class MyObject {
     }
 
     render(_MMatrix, PARENT_MATRIX) {
-        // ✅ Prevent crash if uniform location is invalid
         if (!(_MMatrix instanceof WebGLUniformLocation)) {
             console.warn("Invalid or missing uniform location:", _MMatrix, "in object:", this);
             return;

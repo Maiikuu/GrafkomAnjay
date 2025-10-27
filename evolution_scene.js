@@ -76,7 +76,7 @@ export function createEvolutionScene(
   // === INTELEON POSITIONING (Largest - Right) ===
   // Inteleon is final evolution, tallest and most mature
   LIBS.translateX(inteleonRoot.MOVE_MATRIX, 3.0); // Far right
-  LIBS.translateY(inteleonRoot.MOVE_MATRIX, 5); // Lower (taller model)
+  LIBS.translateY(inteleonRoot.MOVE_MATRIX, 5.7); // Lower (taller model)
   LIBS.translateZ(inteleonRoot.MOVE_MATRIX, 5.5);
   LIBS.scaleX(inteleonRoot.MOVE_MATRIX, 1); // Largest
   LIBS.scaleY(inteleonRoot.MOVE_MATRIX, 1);
